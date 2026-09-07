@@ -236,6 +236,8 @@ class _AdminDashboardState extends State<AdminDashboard>
                       fontWeight: FontWeight.w800,
                       letterSpacing: -0.5,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     'Integración de Bases de Datos · Vista Consolidada',
@@ -243,11 +245,14 @@ class _AdminDashboardState extends State<AdminDashboard>
                       color: FitNetTheme.textSecondary,
                       fontSize: 12,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-            Container(
+            if (MediaQuery.of(context).size.width > 550) ...[
+              Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
@@ -273,6 +278,7 @@ class _AdminDashboardState extends State<AdminDashboard>
                 ],
               ),
             ),
+            ],
             const SizedBox(width: 8),
             IconButton(
               icon: const Icon(Icons.refresh_rounded,

@@ -8,7 +8,10 @@ import 'admin_dashboard.dart';
 
 /// Pantalla de inicio de sesión de Fit.Net.
 ///
-/// Diseño minimalista con tema oscuro premium y acentos dorados.
+/// Diseño split-screen:
+/// - Panel izquierdo: Imagen de gimnasio a pantalla completa
+/// - Panel derecho: Formulario de login con logo, campos y credenciales demo
+///
 /// La autenticación determina el enrutamiento basado en rol:
 /// - ADMIN_GLOBAL → AdminDashboard
 /// - CAJERO → CajeroDashboard
@@ -39,13 +42,13 @@ class _LoginScreenState extends State<LoginScreen>
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1000),
     );
     _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOut),
     );
     _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.15),
+      begin: const Offset(0, 0.08),
       end: Offset.zero,
     ).animate(
       CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
@@ -102,7 +105,8 @@ class _LoginScreenState extends State<LoginScreen>
     if (usuario.rol == RolUsuario.adminGlobal) {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => AdminDashboard(usuario: usuario),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              AdminDashboard(usuario: usuario),
           transitionsBuilder: (_, anim, secondAnimation, child) =>
               FadeTransition(opacity: anim, child: child),
           transitionDuration: const Duration(milliseconds: 500),
@@ -111,7 +115,8 @@ class _LoginScreenState extends State<LoginScreen>
     } else {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => CajeroDashboard(usuario: usuario),
+          pageBuilder: (context, animation, secondaryAnimation) =>
+              CajeroDashboard(usuario: usuario),
           transitionsBuilder: (_, anim, secondAnimation, child) =>
               FadeTransition(opacity: anim, child: child),
           transitionDuration: const Duration(milliseconds: 500),
@@ -122,204 +127,109 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWide = screenWidth > 800;
 
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(gradient: FitNetTheme.darkGradient),
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: FadeTransition(
-              opacity: _fadeAnim,
-              child: SlideTransition(
-                position: _slideAnim,
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: screenSize.width > 500 ? 440 : double.infinity,
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // ── Logo / Branding ──
-                      _buildLogo(),
-                      const SizedBox(height: 48),
+      body: Row(
+        children: [
+          // ══════════════════════════════════════════════
+          // PANEL IZQUIERDO – Imagen del gimnasio
+          // ══════════════════════════════════════════════
+          if (isWide)
+            Expanded(
+              flex: 5,
+              child: _buildImagePanel(),
+            ),
 
-                      // ── Formulario de login ──
-                      Container(
-                        decoration: FitNetTheme.goldAccentCard,
-                        padding: const EdgeInsets.all(32),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Iniciar Sesión',
-                                style: TextStyle(
-                                  color: FitNetTheme.textPrimary,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.5,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              const Text(
-                                'Ingresa tus credenciales para continuar',
-                                style: TextStyle(
-                                  color: FitNetTheme.textSecondary,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 32),
+          // ══════════════════════════════════════════════
+          // PANEL DERECHO – Formulario de login
+          // ══════════════════════════════════════════════
+          Expanded(
+            flex: isWide ? 4 : 1,
+            child: _buildLoginPanel(),
+          ),
+        ],
+      ),
+    );
+  }
 
-                              // Campo: Usuario
-                              TextFormField(
-                                controller: _usernameController,
-                                style: const TextStyle(
-                                  color: FitNetTheme.textPrimary,
-                                ),
-                                decoration: const InputDecoration(
-                                  labelText: 'Usuario',
-                                  prefixIcon: Icon(Icons.person_outline),
-                                ),
-                                validator: (v) => v == null || v.trim().isEmpty
-                                    ? 'Ingresa tu usuario'
-                                    : null,
-                                textInputAction: TextInputAction.next,
-                              ),
-                              const SizedBox(height: 20),
+  /// Panel izquierdo: imagen de gimnasio con overlay oscuro.
+  Widget _buildImagePanel() {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Imagen de fondo
+        Image.asset(
+          'assets/images/gym_bg.jpg',
+          fit: BoxFit.cover,
+        ),
+        // Overlay con gradiente para dar profundidad
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Colors.black.withValues(alpha: 0.3),
+                Colors.black.withValues(alpha: 0.1),
+                Colors.black.withValues(alpha: 0.4),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+        ),
+        // Borde dorado sutil en el borde derecho
+        Positioned(
+          right: 0,
+          top: 0,
+          bottom: 0,
+          child: Container(
+            width: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  FitNetTheme.gold.withValues(alpha: 0.0),
+                  FitNetTheme.gold.withValues(alpha: 0.3),
+                  FitNetTheme.gold.withValues(alpha: 0.0),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-                              // Campo: Contraseña
-                              TextFormField(
-                                controller: _passwordController,
-                                obscureText: _obscurePassword,
-                                style: const TextStyle(
-                                  color: FitNetTheme.textPrimary,
-                                ),
-                                decoration: InputDecoration(
-                                  labelText: 'Contraseña',
-                                  prefixIcon:
-                                      const Icon(Icons.lock_outline),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      _obscurePassword
-                                          ? Icons.visibility_off_outlined
-                                          : Icons.visibility_outlined,
-                                      color: FitNetTheme.textSecondary,
-                                    ),
-                                    onPressed: () => setState(
-                                      () =>
-                                          _obscurePassword = !_obscurePassword,
-                                    ),
-                                  ),
-                                ),
-                                validator: (v) => v == null || v.isEmpty
-                                    ? 'Ingresa tu contraseña'
-                                    : null,
-                                textInputAction: TextInputAction.done,
-                                onFieldSubmitted: (_) => _handleLogin(),
-                              ),
-                              const SizedBox(height: 12),
+  /// Panel derecho: formulario de login completo.
+  Widget _buildLoginPanel() {
+    return Container(
+      color: FitNetTheme.backgroundDark,
+      child: FadeTransition(
+        opacity: _fadeAnim,
+        child: SlideTransition(
+          position: _slideAnim,
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // ── Logo / Branding ──
+                    _buildLogo(),
+                    const SizedBox(height: 48),
 
-                              // Mensaje de error
-                              if (_errorMessage != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(bottom: 12),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 12,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: FitNetTheme.error
-                                          .withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: FitNetTheme.error
-                                            .withValues(alpha: 0.3),
-                                      ),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.error_outline,
-                                          color: FitNetTheme.error,
-                                          size: 18,
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Text(
-                                          _errorMessage!,
-                                          style: const TextStyle(
-                                            color: FitNetTheme.error,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
+                    // ── Formulario de login ──
+                    _buildLoginForm(),
 
-                              const SizedBox(height: 8),
+                    const SizedBox(height: 28),
 
-                              // Botón: Entrar
-                              GoldButton(
-                                label: 'Entrar',
-                                icon: Icons.arrow_forward_rounded,
-                                isLoading: _isLoading,
-                                onPressed: _handleLogin,
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // ── Credenciales de demo ──
-                      Container(
-                        decoration: FitNetTheme.premiumCard,
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.info_outline,
-                                  color: FitNetTheme.gold.withValues(alpha: 0.7),
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  'Credenciales de Demostración',
-                                  style: TextStyle(
-                                    color: FitNetTheme.textSecondary,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            _buildCredentialRow(
-                              'Admin Global',
-                              'admin / admin123',
-                            ),
-                            _buildCredentialRow(
-                              'Cajero Centro',
-                              'cajero_centro / centro123',
-                            ),
-                            _buildCredentialRow(
-                              'Cajero Norte',
-                              'cajero_norte / norte123',
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                    // ── Credenciales de demo ──
+                    _buildCredentialsPanel(),
+                  ],
                 ),
               ),
             ),
@@ -332,21 +242,28 @@ class _LoginScreenState extends State<LoginScreen>
   Widget _buildLogo() {
     return Column(
       children: [
-        // Icono con glow dorado
+        // Icono circular con glow dorado
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: FitNetTheme.goldGradient,
-            boxShadow: FitNetTheme.goldGlow,
+            boxShadow: [
+              BoxShadow(
+                color: FitNetTheme.gold.withValues(alpha: 0.25),
+                blurRadius: 24,
+                spreadRadius: 2,
+              ),
+            ],
           ),
           child: const Icon(
             Icons.fitness_center_rounded,
             color: FitNetTheme.backgroundDark,
-            size: 40,
+            size: 32,
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 18),
+        // Texto FIT.NET con gradiente dorado
         ShaderMask(
           shaderCallback: (bounds) =>
               FitNetTheme.goldGradient.createShader(bounds),
@@ -354,23 +271,180 @@ class _LoginScreenState extends State<LoginScreen>
             'FIT.NET',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 36,
+              fontSize: 30,
               fontWeight: FontWeight.w900,
               letterSpacing: 6,
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         const Text(
           'Sistema de Gestión de Gimnasios',
           style: TextStyle(
             color: FitNetTheme.textSecondary,
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: FontWeight.w400,
-            letterSpacing: 1,
+            letterSpacing: 0.5,
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildLoginForm() {
+    return Container(
+      decoration: FitNetTheme.goldAccentCard,
+      padding: const EdgeInsets.all(28),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Título
+            const Text(
+              'Iniciar Sesión',
+              style: TextStyle(
+                color: FitNetTheme.textPrimary,
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.5,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Ingresa tus credenciales para continuar',
+              style: TextStyle(
+                color: FitNetTheme.textSecondary,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 28),
+
+            // Campo: Usuario
+            TextFormField(
+              controller: _usernameController,
+              style: const TextStyle(color: FitNetTheme.textPrimary),
+              decoration: const InputDecoration(
+                labelText: 'Usuario',
+                prefixIcon: Icon(Icons.person_outline),
+              ),
+              validator: (v) =>
+                  v == null || v.trim().isEmpty ? 'Ingresa tu usuario' : null,
+              textInputAction: TextInputAction.next,
+            ),
+            const SizedBox(height: 18),
+
+            // Campo: Contraseña
+            TextFormField(
+              controller: _passwordController,
+              obscureText: _obscurePassword,
+              style: const TextStyle(color: FitNetTheme.textPrimary),
+              decoration: InputDecoration(
+                labelText: 'Contraseña',
+                prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: FitNetTheme.textSecondary,
+                  ),
+                  onPressed: () =>
+                      setState(() => _obscurePassword = !_obscurePassword),
+                ),
+              ),
+              validator: (v) =>
+                  v == null || v.isEmpty ? 'Ingresa tu contraseña' : null,
+              textInputAction: TextInputAction.done,
+              onFieldSubmitted: (_) => _handleLogin(),
+            ),
+            const SizedBox(height: 10),
+
+            // Mensaje de error
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              child: _errorMessage != null
+                  ? Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: FitNetTheme.error.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: FitNetTheme.error.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.error_outline,
+                                color: FitNetTheme.error, size: 16),
+                            const SizedBox(width: 8),
+                            Text(
+                              _errorMessage!,
+                              style: const TextStyle(
+                                  color: FitNetTheme.error, fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
+
+            const SizedBox(height: 6),
+
+            // Botón: Entrar
+            GoldButton(
+              label: 'Entrar',
+              icon: Icons.arrow_forward_rounded,
+              isLoading: _isLoading,
+              onPressed: _handleLogin,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCredentialsPanel() {
+    return Container(
+      decoration: FitNetTheme.premiumCard,
+      padding: const EdgeInsets.all(18),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.info_outline,
+                color: FitNetTheme.gold.withValues(alpha: 0.7),
+                size: 15,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: const Text(
+                  'Credenciales de Demostración',
+                  style: TextStyle(
+                    color: FitNetTheme.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildCredentialRow('Admin Global', 'admin / admin123'),
+          _buildCredentialRow('Cajero Centro', 'cajero_centro / centro123'),
+          _buildCredentialRow('Cajero Norte', 'cajero_norte / norte123'),
+        ],
+      ),
     );
   }
 
@@ -380,8 +454,8 @@ class _LoginScreenState extends State<LoginScreen>
       child: Row(
         children: [
           Container(
-            width: 6,
-            height: 6,
+            width: 5,
+            height: 5,
             decoration: BoxDecoration(
               color: FitNetTheme.gold.withValues(alpha: 0.5),
               shape: BoxShape.circle,
@@ -396,12 +470,16 @@ class _LoginScreenState extends State<LoginScreen>
               fontWeight: FontWeight.w600,
             ),
           ),
-          Text(
-            credentials,
-            style: TextStyle(
-              color: FitNetTheme.gold.withValues(alpha: 0.8),
-              fontSize: 12,
-              fontFamily: 'monospace',
+          Expanded(
+            child: Text(
+              credentials,
+              style: TextStyle(
+                color: FitNetTheme.gold.withValues(alpha: 0.8),
+                fontSize: 12,
+                fontFamily: 'monospace',
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

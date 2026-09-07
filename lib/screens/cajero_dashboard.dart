@@ -305,6 +305,8 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                       fontWeight: FontWeight.w800,
                       letterSpacing: -0.5,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     'Cajero: ${widget.usuario.username} · Distribución Local',
@@ -312,11 +314,14 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                       color: FitNetTheme.textSecondary,
                       fontSize: 12,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-            Container(
+            if (MediaQuery.of(context).size.width > 500) ...[
+              Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: FitNetTheme.gold.withValues(alpha: 0.1),
@@ -341,6 +346,7 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                 ],
               ),
             ),
+            ],
             const SizedBox(width: 12),
             IconButton(
               icon: const Icon(Icons.logout_rounded, color: FitNetTheme.textSecondary),

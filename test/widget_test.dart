@@ -11,20 +11,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fit_net/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('Fit.Net app loads smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+    await tester.pumpWidget(const FitNetApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Wait for animations to finish
+    await tester.pumpAndSettle();
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that the login screen is rendered (has the 'Iniciar Sesión' text)
+    expect(find.text('Iniciar Sesión'), findsOneWidget);
+    
+    // Verify the username and password fields exist
+    expect(find.byType(TextField), findsWidgets);
   });
 }
