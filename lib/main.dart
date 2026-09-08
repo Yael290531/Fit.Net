@@ -57,12 +57,17 @@ void main() async {
   final db = AppDatabase();
   final settingsRepo = SettingsRepository(db);
   final syncQueueRepo = SyncQueueRepository(db);
-  const syncService = DisabledRemoteSyncService();
-
-  // El servicio de sync remoto está deshabilitado hasta conectar Supabase.
-  // Ver: lib/core/remote/remote_sync_service.dart
+  // ── Inicializar servicio de sincronización remota ─────────────────
+  final RemoteSyncService syncService;
   if (remoteSyncEnabled) {
-    await syncService.initialize();
+    final supabaseService = SupabaseRemoteSyncService(
+      db: db,
+      syncQueueRepo: syncQueueRepo,
+    );
+    await supabaseService.initialize();
+    syncService = supabaseService;
+  } else {
+    syncService = const DisabledRemoteSyncService();
   }
 
   runApp(

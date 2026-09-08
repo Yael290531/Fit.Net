@@ -40,6 +40,9 @@ dependencies:
   drift_flutter: ^0.3.1      # Abre la BD en la carpeta correcta por plataforma
   uuid: ^4.5.0               # Generación de UUIDs para PKs
 
+  # ── Sincronización remota (Supabase) ──────────────────────────────
+  supabase_flutter: ^2.8.0    # Cliente Supabase para Flutter
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
