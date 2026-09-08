@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase/supabase.dart';
 
 import '../../core/database/app_database.dart';
 import '../../data/repositories/sync_queue_repository.dart';
@@ -78,8 +78,8 @@ class SupabaseRemoteSyncService implements RemoteSyncService {
   })  : _db = db,
         _syncQueueRepo = syncQueueRepo;
 
-  /// Cliente Supabase (disponible después de initialize).
-  SupabaseClient get _client => Supabase.instance.client;
+  /// Cliente Supabase (inicializado en initialize()).
+  late final SupabaseClient _client;
 
   /// Tablas de Supabase que corresponden a entityType en sync_queue.
   static const Map<String, String> _tableMap = {
@@ -90,10 +90,7 @@ class SupabaseRemoteSyncService implements RemoteSyncService {
 
   @override
   Future<void> initialize() async {
-    await Supabase.initialize(
-      url: supabaseUrl,
-      publishableKey: supabaseAnonKey,
-    );
+    _client = SupabaseClient(supabaseUrl, supabaseAnonKey);
   }
 
   @override
@@ -112,6 +109,12 @@ class SupabaseRemoteSyncService implements RemoteSyncService {
         }
 
         final payload = jsonDecode(entry.payload) as Map<String, dynamic>;
+
+        // ── Limpieza de payloads antiguos/mal formados ──
+        if (tableName == 'clientes') {
+          payload.remove('tarjeta_id');
+          payload.remove('saldo_inicial');
+        }
 
         switch (entry.operation) {
           case 'insert':

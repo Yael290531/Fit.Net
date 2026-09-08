@@ -14,7 +14,7 @@ class SyncQueueRepository {
   /// Devuelve todos los registros pendientes.
   Future<List<SyncQueueData>> obtenerPendientes() async {
     return (_db.select(_db.syncQueue)
-          ..where((t) => t.status.equals('pending'))
+          ..where((t) => t.status.isIn(['pending', 'failed']))
           ..orderBy([(t) => OrderingTerm(expression: t.createdAt)]))
         .get();
   }
@@ -22,7 +22,7 @@ class SyncQueueRepository {
   /// Stream de la cantidad total de registros pendientes.
   Stream<int> watchContadorPendientes() {
     return (_db.select(_db.syncQueue)
-          ..where((t) => t.status.equals('pending')))
+          ..where((t) => t.status.isIn(['pending', 'failed'])))
         .watch()
         .map((list) => list.length);
   }

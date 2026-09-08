@@ -61,23 +61,50 @@ class _AdminDashboardState extends State<AdminDashboard>
     );
   }
 
-  void _refreshData() {
-    setState(() {});
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.sync, color: FitNetTheme.gold, size: 18),
-            SizedBox(width: 12),
-            Text('Datos actualizados desde las sucursales'),
-          ],
-        ),
-        backgroundColor: FitNetTheme.cardDark,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+  bool _isRefreshing = false;
+
+  Future<void> _refreshData() async {
+    if (_isRefreshing) return;
+    setState(() => _isRefreshing = true);
+
+    try {
+      final providers = AppProviders.of(context);
+      // Extrae los datos desde Supabase a la BD Local
+      await providers.syncService.pullRemoteChanges();
+
+      if (mounted) {
+        setState(() {}); // Fuerza reconstrucción para leer de Drift
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.sync, color: FitNetTheme.gold, size: 18),
+                SizedBox(width: 12),
+                Text('Datos actualizados desde el Servidor Central'),
+              ],
+            ),
+            backgroundColor: FitNetTheme.cardDark,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al sincronizar: $e'),
+            backgroundColor: FitNetTheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isRefreshing = false);
+      }
+    }
   }
 
   @override

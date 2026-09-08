@@ -65,6 +65,13 @@ void main() async {
       syncQueueRepo: syncQueueRepo,
     );
     await supabaseService.initialize();
+    
+    // Auto-pull en background al iniciar la app para tener los datos más recientes
+    supabaseService.pullRemoteChanges().catchError((e) {
+      // ignore: avoid_print
+      print('Auto-pull error en startup: $e');
+    });
+
     syncService = supabaseService;
   } else {
     syncService = const DisabledRemoteSyncService();

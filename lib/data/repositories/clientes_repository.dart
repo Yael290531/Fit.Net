@@ -124,7 +124,7 @@ class ClientesRepository {
             ),
           );
 
-      // 3. Registrar en sync_queue para futura sincronización.
+      // 3. Registrar cliente en sync_queue.
       await _db
           .into(_db.syncQueue)
           .insert(
@@ -138,8 +138,25 @@ class ClientesRepository {
                 'nombre': nombre,
                 'telefono': telefono,
                 'sucursal_id': sucursalId,
-                'tarjeta_id': tarjetaId,
-                'saldo_inicial': saldoInicial,
+              }),
+              createdAt: now,
+            ),
+          );
+
+      // 4. Registrar tarjeta en sync_queue.
+      await _db
+          .into(_db.syncQueue)
+          .insert(
+            SyncQueueCompanion.insert(
+              id: _uuid.v4(),
+              entityType: 'tarjeta',
+              entityId: tarjetaId,
+              operation: 'insert',
+              payload: jsonEncode({
+                'id_tarjeta': tarjetaId,
+                'cliente_id': clienteId,
+                'saldo': saldoInicial,
+                'sucursal_id': sucursalId,
               }),
               createdAt: now,
             ),

@@ -927,11 +927,15 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
   }
 
   // ── Indicador de sincronización pendiente ──
+  bool _isSyncing = false;
+
   Widget _buildSyncStatusIndicator() {
     return StreamBuilder<int>(
       stream: _providers.syncQueueRepo.watchContadorPendientes(),
       builder: (context, snapshot) {
         final pendientes = snapshot.data ?? 0;
+        final hasPending = pendientes > 0;
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
@@ -942,8 +946,16 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
           child: Row(
             children: [
               Icon(
-                Icons.cloud_off_rounded,
-                color: FitNetTheme.gold.withValues(alpha: 0.6),
+                _isSyncing
+                    ? Icons.cloud_sync_rounded
+                    : hasPending
+                        ? Icons.cloud_upload_rounded
+                        : Icons.cloud_done_rounded,
+                color: _isSyncing
+                    ? FitNetTheme.gold
+                    : hasPending
+                        ? FitNetTheme.gold.withValues(alpha: 0.6)
+                        : FitNetTheme.success.withValues(alpha: 0.6),
                 size: 18,
               ),
               const SizedBox(width: 12),
@@ -951,17 +963,27 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Modo local · Sincronización remota pendiente',
-                      style: TextStyle(
+                    Text(
+                      _isSyncing
+                          ? 'Sincronizando con Supabase...'
+                          : hasPending
+                              ? 'Operaciones pendientes de sincronizar'
+                              : 'Sincronizado con Supabase',
+                      style: const TextStyle(
                         color: FitNetTheme.textSecondary,
                         fontSize: 12,
                       ),
                     ),
                     Text(
-                      'Operaciones pendientes: $pendientes',
+                      _isSyncing
+                          ? 'Enviando datos...'
+                          : 'Operaciones pendientes: $pendientes',
                       style: TextStyle(
-                        color: FitNetTheme.gold.withValues(alpha: 0.8),
+                        color: _isSyncing
+                            ? FitNetTheme.gold
+                            : hasPending
+                                ? FitNetTheme.gold.withValues(alpha: 0.8)
+                                : FitNetTheme.success.withValues(alpha: 0.8),
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
                       ),
@@ -969,25 +991,33 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                   ],
                 ),
               ),
-              Tooltip(
-                message:
-                    'La conexión con el servidor central se implementará próximamente.',
-                child: OutlinedButton.icon(
-                  onPressed: null, // Deshabilitado hasta Supabase
-                  icon: const Icon(Icons.sync_disabled, size: 14),
-                  label: const Text(
-                    'Sincronizar',
-                    style: TextStyle(fontSize: 11),
+              OutlinedButton.icon(
+                onPressed: _isSyncing ? null : () => _syncToSupabase(),
+                icon: _isSyncing
+                    ? const SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: FitNetTheme.gold,
+                        ),
+                      )
+                    : const Icon(Icons.sync, size: 14),
+                label: Text(
+                  _isSyncing ? 'Enviando...' : 'Sincronizar',
+                  style: const TextStyle(fontSize: 11),
+                ),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor:
+                      hasPending ? FitNetTheme.gold : FitNetTheme.textSecondary,
+                  side: BorderSide(
+                    color: hasPending
+                        ? FitNetTheme.gold.withValues(alpha: 0.3)
+                        : Colors.white.withValues(alpha: 0.1),
                   ),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: FitNetTheme.textSecondary,
-                    side: BorderSide(
-                      color: Colors.white.withValues(alpha: 0.1),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
                   ),
                 ),
               ),
@@ -996,5 +1026,32 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
         );
       },
     );
+  }
+
+  /// Ejecuta la sincronización: push de cambios locales a Supabase.
+  Future<void> _syncToSupabase() async {
+    setState(() => _isSyncing = true);
+
+    try {
+      final syncService = _providers.syncService;
+
+      // 1. Subir cambios locales pendientes.
+      await syncService.pushPendingChanges();
+
+      // 2. Descargar cambios remotos (opcional).
+      await syncService.pullRemoteChanges();
+
+      if (mounted) {
+        _showSnackBar('Sincronización completada ✓', isSuccess: true);
+      }
+    } catch (e) {
+      if (mounted) {
+        _showSnackBar('Error al sincronizar: $e', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSyncing = false);
+      }
+    }
   }
 }
