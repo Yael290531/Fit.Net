@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import '../app_providers.dart';
+import '../core/database/app_database.dart';
+import '../data/repositories/clientes_repository.dart';
+import '../data/repositories/movimientos_repository.dart';
+import '../data/repositories/tarjetas_repository.dart';
 import '../models/models.dart';
-import '../services/database_service.dart';
 import '../widgets/theme_widgets.dart';
 import 'login_screen.dart';
 
@@ -21,8 +25,6 @@ class CajeroDashboard extends StatefulWidget {
 }
 
 class _CajeroDashboardState extends State<CajeroDashboard> {
-  final _db = DatabaseService();
-
   // Controladores para Registrar Cliente
   final _nombreClienteCtrl = TextEditingController();
   final _saldoInicialCtrl = TextEditingController();
@@ -34,10 +36,24 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
   // Controlador para Cobro de Acceso
   final _idAccesoCtrl = TextEditingController();
 
-  String get _sucursal =>
-      widget.usuario.sucursalAsignada ?? 'Sucursal Centro';
+  String get _sucursal => widget.usuario.sucursalAsignada ?? 'Sucursal Centro';
 
   int _selectedTab = 0;
+
+  // ── Repositorios (se inicializan en didChangeDependencies) ──
+  late ClientesRepository _clientesRepo;
+  late TarjetasRepository _tarjetasRepo;
+  late MovimientosRepository _movimientosRepo;
+  late AppProviders _providers;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _providers = AppProviders.of(context);
+    _clientesRepo = _providers.clientesRepo(_sucursal);
+    _tarjetasRepo = _providers.tarjetasRepo(_sucursal);
+    _movimientosRepo = _providers.movimientosRepo(_sucursal);
+  }
 
   @override
   void dispose() {
@@ -49,7 +65,11 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
     super.dispose();
   }
 
-  void _showSnackBar(String message, {bool isError = false, bool isSuccess = false}) {
+  void _showSnackBar(
+    String message, {
+    bool isError = false,
+    bool isSuccess = false,
+  }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -58,13 +78,13 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
               isError
                   ? Icons.error_outline
                   : isSuccess
-                      ? Icons.check_circle_outline
-                      : Icons.info_outline,
+                  ? Icons.check_circle_outline
+                  : Icons.info_outline,
               color: isError
                   ? FitNetTheme.error
                   : isSuccess
-                      ? FitNetTheme.success
-                      : FitNetTheme.gold,
+                  ? FitNetTheme.success
+                  : FitNetTheme.gold,
               size: 20,
             ),
             const SizedBox(width: 12),
@@ -81,10 +101,10 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
 
   // ═══════════════════════════════════════════════════════════
   // REGISTRAR NUEVO CLIENTE
-  // TODO: INSERT INTO clientes_tarjeta (nombre, saldo) VALUES (?, ?)
-  // en la BD LOCAL de la sucursal.
+  // Usa ClientesRepository → transacción Drift que crea cliente + tarjeta
+  // + entrada en sync_queue.
   // ═══════════════════════════════════════════════════════════
-  void _registrarCliente() {
+  Future<void> _registrarCliente() async {
     final nombre = _nombreClienteCtrl.text.trim();
     final saldoText = _saldoInicialCtrl.text.trim();
 
@@ -99,24 +119,30 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
       return;
     }
 
-    final cliente = _db.registrarCliente(_sucursal, nombre, saldo);
-    _nombreClienteCtrl.clear();
-    _saldoInicialCtrl.clear();
+    try {
+      final tarjetaId = await _clientesRepo.registrarCliente(
+        nombre: nombre,
+        saldoInicial: saldo,
+      );
+      _nombreClienteCtrl.clear();
+      _saldoInicialCtrl.clear();
 
-    setState(() {});
-    _showSnackBar(
-      '✓ Cliente "${cliente.nombre}" registrado · Tarjeta #${cliente.idTarjeta}',
-      isSuccess: true,
-    );
+      if (!mounted) return;
+      _showSnackBar(
+        '✓ Cliente "$nombre" registrado · Tarjeta #${tarjetaId.substring(0, 8)}',
+        isSuccess: true,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _showSnackBar('Error: $e', isError: true);
+    }
   }
 
   // ═══════════════════════════════════════════════════════════
   // RECARGAR TARJETA
-  // TODO: UPDATE clientes_tarjeta SET saldo = saldo + ? WHERE id_tarjeta = ?
-  // + INSERT INTO movimientos_financieros (...)
-  // en la BD LOCAL de la sucursal.
+  // Usa TarjetasRepository → transacción Drift atómica
   // ═══════════════════════════════════════════════════════════
-  void _recargarTarjeta() {
+  Future<void> _recargarTarjeta() async {
     final idText = _idRecargaCtrl.text.trim();
     final montoText = _montoRecargaCtrl.text.trim();
 
@@ -125,68 +151,87 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
       return;
     }
 
-    final id = int.tryParse(idText);
     final monto = double.tryParse(montoText);
-    if (id == null || monto == null || monto <= 0) {
-      _showSnackBar('Datos inválidos', isError: true);
+    if (monto == null || monto <= 0) {
+      _showSnackBar('Monto inválido', isError: true);
       return;
     }
 
-    final exito = _db.recargarTarjeta(_sucursal, id, monto);
-    if (exito) {
+    try {
+      await _tarjetasRepo.recargarTarjeta(idText, monto);
       _idRecargaCtrl.clear();
       _montoRecargaCtrl.clear();
-      setState(() {});
+
+      final shortId = idText.length >= 8 ? idText.substring(0, 8) : idText;
+      if (!mounted) return;
       _showSnackBar(
-        '✓ Recarga de \$${monto.toStringAsFixed(2)} a tarjeta #$id exitosa',
+        '✓ Recarga local de \$${monto.toStringAsFixed(2)} aplicada de inmediato a tarjeta #$shortId',
         isSuccess: true,
       );
-    } else {
-      _showSnackBar('Tarjeta #$id no encontrada en $_sucursal', isError: true);
+    } catch (e) {
+      if (!mounted) return;
+      _showSnackBar('$e', isError: true);
     }
   }
 
   // ═══════════════════════════════════════════════════════════
   // COBRAR ACCESO
-  // TODO: UPDATE clientes_tarjeta SET saldo = saldo - 80 WHERE id_tarjeta = ?
-  // + INSERT INTO movimientos_financieros (tipo='cobroAcceso', ...)
-  // en la BD LOCAL de la sucursal.
+  // Usa TarjetasRepository → transacción Drift atómica local
   // ═══════════════════════════════════════════════════════════
-  void _cobrarAcceso() {
+  Future<void> _cobrarAcceso() async {
     final idText = _idAccesoCtrl.text.trim();
     if (idText.isEmpty) {
       _showSnackBar('Ingresa el ID de la tarjeta', isError: true);
       return;
     }
 
-    final id = int.tryParse(idText);
-    if (id == null) {
-      _showSnackBar('ID inválido', isError: true);
-      return;
-    }
-
-    final exito = _db.cobrarAcceso(_sucursal, id);
-    if (exito) {
+    try {
+      await _tarjetasRepo.cobrarAcceso(idText, 80.0);
       _idAccesoCtrl.clear();
-      setState(() {});
-      _showSnackBar('✓ Acceso autorizado para tarjeta #$id', isSuccess: true);
-    } else {
-      final cliente = _db.buscarClientePorId(_sucursal, id);
-      if (cliente == null) {
-        _showSnackBar('Tarjeta #$id no encontrada', isError: true);
-      } else {
-        _showSnackBar(
-          'Saldo insuficiente (\$${cliente.saldo.toStringAsFixed(2)})',
-          isError: true,
-        );
-      }
+
+      final shortId = idText.length >= 8 ? idText.substring(0, 8) : idText;
+      if (!mounted) return;
+      _showSnackBar(
+        '✓ Acceso autorizado y descontado de inmediato (Tarjeta #$shortId)',
+        isSuccess: true,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _showSnackBar('$e', isError: true);
+    }
+  }
+
+  // ── Acciones directas e inmediatas desde la lista de clientes ──
+  void _seleccionarParaOperar(String idTarjeta, String nombre) {
+    _idRecargaCtrl.text = idTarjeta;
+    _idAccesoCtrl.text = idTarjeta;
+    _showSnackBar('Tarjeta de $nombre cargada para operar');
+  }
+
+  void _cargarParaRecarga(String idTarjeta) {
+    _idRecargaCtrl.text = idTarjeta;
+    setState(() => _selectedTab = 1);
+  }
+
+  Future<void> _cobrarAccesoRapido(String idTarjeta, String nombre) async {
+    try {
+      await _tarjetasRepo.cobrarAcceso(idTarjeta, 80.0);
+      if (!mounted) return;
+      _showSnackBar(
+        '✓ Acceso autorizado (\$80.00) cobrado localmente a $nombre',
+        isSuccess: true,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      _showSnackBar('$e', isError: true);
     }
   }
 
   void _logout() {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const LoginScreen(),
         transitionsBuilder: (_, anim, secondAnimation, child) =>
             FadeTransition(opacity: anim, child: child),
         transitionDuration: const Duration(milliseconds: 400),
@@ -196,9 +241,6 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final clientes = _db.obtenerClientes(_sucursal);
-    final movimientosHoy = _db.contarMovimientosHoy(_sucursal);
-    final ingresosHoy = _db.obtenerIngresosHoy(_sucursal);
     final screenWidth = MediaQuery.of(context).size.width;
     final isWide = screenWidth > 900;
 
@@ -214,46 +256,39 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isWide ? 40 : 20,
-                  vertical: 20,
+                  horizontal: isWide ? 40 : 12,
+                  vertical: isWide ? 20 : 14,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // ── Métricas rápidas ──
-                    _buildQuickMetrics(
-                      clientes.length,
-                      movimientosHoy,
-                      ingresosHoy,
-                      isWide,
-                    ),
+                    // ── Métricas rápidas (reactivas con StreamBuilder) ──
+                    _buildQuickMetricsStream(isWide),
                     const SizedBox(height: 28),
 
                     // ── Tabs de operaciones ──
                     _buildTabBar(),
                     const SizedBox(height: 20),
 
-                    // ── Contenido del tab seleccionado ──
+                    // ── Contenido del tab seleccionado + lista clientes ──
                     if (isWide)
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            flex: 5,
-                            child: _buildTabContent(),
-                          ),
+                          Expanded(flex: 5, child: _buildTabContent()),
                           const SizedBox(width: 24),
-                          Expanded(
-                            flex: 4,
-                            child: _buildClientesList(clientes),
-                          ),
+                          Expanded(flex: 4, child: _buildClientesListStream()),
                         ],
                       )
                     else ...[
                       _buildTabContent(),
                       const SizedBox(height: 24),
-                      _buildClientesList(clientes),
+                      _buildClientesListStream(),
                     ],
+
+                    const SizedBox(height: 16),
+                    // ── Indicador de operaciones pendientes ──
+                    _buildSyncStatusIndicator(),
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -266,14 +301,20 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
   }
 
   Widget _buildHeader() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmall = screenWidth < 500;
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 16),
+      padding: EdgeInsets.fromLTRB(
+        isSmall ? 14 : 24,
+        12,
+        isSmall ? 14 : 24,
+        12,
+      ),
       decoration: BoxDecoration(
         color: FitNetTheme.surfaceDark,
         border: Border(
-          bottom: BorderSide(
-            color: Colors.white.withValues(alpha: 0.05),
-          ),
+          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
       ),
       child: SafeArea(
@@ -322,34 +363,40 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
             ),
             if (MediaQuery.of(context).size.width > 500) ...[
               Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: FitNetTheme.gold.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: FitNetTheme.gold.withValues(alpha: 0.3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: FitNetTheme.gold.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: FitNetTheme.gold.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.circle, color: FitNetTheme.success, size: 8),
+                    SizedBox(width: 6),
+                    Text(
+                      'BD Local',
+                      style: TextStyle(
+                        color: FitNetTheme.gold,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.circle, color: FitNetTheme.success, size: 8),
-                  SizedBox(width: 6),
-                  Text(
-                    'BD Local',
-                    style: TextStyle(
-                      color: FitNetTheme.gold,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
             ],
             const SizedBox(width: 12),
             IconButton(
-              icon: const Icon(Icons.logout_rounded, color: FitNetTheme.textSecondary),
+              icon: const Icon(
+                Icons.logout_rounded,
+                color: FitNetTheme.textSecondary,
+              ),
               tooltip: 'Cerrar Sesión',
               onPressed: _logout,
             ),
@@ -359,53 +406,94 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
     );
   }
 
+  // ── Métricas rápidas con StreamBuilder ──
+  Widget _buildQuickMetricsStream(bool isWide) {
+    return StreamBuilder<List<Cliente>>(
+      stream: _clientesRepo.watchClientes(),
+      builder: (context, clientesSnap) {
+        final totalClientes = clientesSnap.data?.length ?? 0;
+
+        return StreamBuilder<List<Movimiento>>(
+          stream: _movimientosRepo.watchMovimientosHoy(),
+          builder: (context, movsSnap) {
+            final movimientos = movsSnap.data ?? [];
+            final totalMovimientos = movimientos.length;
+            final ingresos = movimientos
+                .where((m) => m.tipo == 'pago')
+                .fold(0.0, (sum, m) => sum + m.monto);
+
+            return _buildQuickMetrics(
+              totalClientes,
+              totalMovimientos,
+              ingresos,
+              isWide,
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildQuickMetrics(
-      int totalClientes, int movimientos, double ingresos, bool isWide) {
+    int totalClientes,
+    int movimientos,
+    double ingresos,
+    bool isWide,
+  ) {
     final metrics = [
       MetricIndicator(
-        label: 'Clientes Registrados',
+        label: isWide ? 'Clientes Registrados' : 'Clientes',
         value: '$totalClientes',
         icon: Icons.people_outline,
-        subtitle: 'En esta sucursal',
+        subtitle: isWide ? 'En esta sucursal' : null,
       ),
       MetricIndicator(
-        label: 'Movimientos Hoy',
+        label: isWide ? 'Movimientos Hoy' : 'Movimientos',
         value: '$movimientos',
         icon: Icons.receipt_long_outlined,
-        subtitle: 'Transacciones del día',
+        subtitle: isWide ? 'Transacciones del día' : null,
       ),
       MetricIndicator(
-        label: 'Ingresos Hoy',
+        label: isWide ? 'Ingresos Hoy' : 'Ingresos',
         value: '\$${ingresos.toStringAsFixed(2)}',
         icon: Icons.trending_up_rounded,
         valueColor: FitNetTheme.gold,
-        subtitle: 'Cobros de acceso',
+        subtitle: isWide ? 'Cobros de acceso' : null,
       ),
     ];
 
-    if (isWide) {
-      return Row(
-        children: metrics
-            .map((m) => Expanded(child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 6),
-                  child: m,
-                )))
-            .toList(),
-      );
-    }
-    return Column(
-      children: metrics.map((m) => Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: m,
-          )).toList(),
+    // Siempre los 3 cards horizontales y a la par (móvil y desktop)
+    return Row(
+      children: metrics
+          .map(
+            (m) => Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: isWide ? 6 : 4),
+                child: m,
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 
   Widget _buildTabBar() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 550;
+
     final tabs = [
-      (Icons.person_add_outlined, 'Registrar Cliente'),
-      (Icons.credit_card_outlined, 'Recargar Tarjeta'),
-      (Icons.login_rounded, 'Cobrar Acceso'),
+      (
+        Icons.person_add_outlined,
+        isMobile ? 'Registrar' : 'Registrar Cliente',
+      ),
+      (
+        Icons.credit_card_outlined,
+        isMobile ? 'Recargar' : 'Recargar Tarjeta',
+      ),
+      (
+        Icons.login_rounded,
+        isMobile ? 'Cobrar' : 'Cobrar Acceso',
+      ),
     ];
 
     return Container(
@@ -426,7 +514,10 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
               onTap: () => setState(() => _selectedTab = idx),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
-                padding: const EdgeInsets.symmetric(vertical: 12),
+                padding: EdgeInsets.symmetric(
+                  vertical: isMobile ? 10 : 12,
+                  horizontal: 4,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? FitNetTheme.gold.withValues(alpha: 0.12)
@@ -434,7 +525,8 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                   borderRadius: BorderRadius.circular(10),
                   border: isSelected
                       ? Border.all(
-                          color: FitNetTheme.gold.withValues(alpha: 0.3))
+                          color: FitNetTheme.gold.withValues(alpha: 0.3),
+                        )
                       : null,
                 ),
                 child: Row(
@@ -442,21 +534,26 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                   children: [
                     Icon(
                       icon,
-                      size: 18,
+                      size: isMobile ? 16 : 18,
                       color: isSelected
                           ? FitNetTheme.gold
                           : FitNetTheme.textSecondary,
                     ),
-                    const SizedBox(width: 8),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        color: isSelected
-                            ? FitNetTheme.gold
-                            : FitNetTheme.textSecondary,
-                        fontSize: 13,
-                        fontWeight:
-                            isSelected ? FontWeight.w700 : FontWeight.w500,
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: isSelected
+                              ? FitNetTheme.gold
+                              : FitNetTheme.textSecondary,
+                          fontSize: isMobile ? 12 : 13,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
                       ),
                     ),
                   ],
@@ -512,6 +609,8 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
           GoldButton(
             label: 'Registrar Cliente',
             icon: Icons.person_add_rounded,
+            textColor: const Color(0xFF5B4002),
+            iconColor: const Color(0xFF5B4002),
             onPressed: _registrarCliente,
           ),
         ],
@@ -529,11 +628,11 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
         children: [
           TextFormField(
             controller: _idRecargaCtrl,
-            keyboardType: TextInputType.number,
             style: const TextStyle(color: FitNetTheme.textPrimary),
             decoration: const InputDecoration(
-              labelText: 'ID de Tarjeta',
+              labelText: 'ID de Tarjeta (ej. primeros 8 dígitos o UUID)',
               prefixIcon: Icon(Icons.credit_card_outlined),
+              hintText: 'Ingresa el ID o tócalo en la lista',
             ),
           ),
           const SizedBox(height: 16),
@@ -550,6 +649,8 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
           GoldButton(
             label: 'Recargar Tarjeta',
             icon: Icons.add_card_rounded,
+            textColor: const Color(0xFF5B4002),
+            iconColor: const Color(0xFF5B4002),
             onPressed: _recargarTarjeta,
           ),
         ],
@@ -593,17 +694,19 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
           const SizedBox(height: 20),
           TextFormField(
             controller: _idAccesoCtrl,
-            keyboardType: TextInputType.number,
             style: const TextStyle(color: FitNetTheme.textPrimary),
             decoration: const InputDecoration(
-              labelText: 'ID de Tarjeta del Cliente',
+              labelText: 'ID de Tarjeta del Cliente (ej. primeros 8 dígitos o UUID)',
               prefixIcon: Icon(Icons.credit_card_outlined),
+              hintText: 'Ingresa el ID o tócalo en la lista',
             ),
           ),
           const SizedBox(height: 24),
           GoldButton(
             label: 'Cobrar Acceso · \$80.00',
             icon: Icons.check_circle_outline,
+            textColor: const Color(0xFF5B4002),
+            iconColor: const Color(0xFF5B4002),
             onPressed: _cobrarAcceso,
           ),
         ],
@@ -611,12 +714,39 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
     );
   }
 
-  // ── Lista de Clientes ──
-  Widget _buildClientesList(List<ClienteTarjeta> clientes) {
+  // ── Lista de Clientes (reactiva con StreamBuilder) ──
+  // ── Lista de Clientes (reactiva instantánea con watchClientesConTarjeta) ──
+  Widget _buildClientesListStream() {
+    return StreamBuilder<List<ClienteConTarjeta>>(
+      stream: _clientesRepo.watchClientesConTarjeta(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          return const PremiumCard(
+            title: 'Clientes',
+            icon: Icons.people_outline,
+            child: Center(
+              child: Padding(
+                padding: EdgeInsets.all(32),
+                child: CircularProgressIndicator(color: FitNetTheme.gold),
+              ),
+            ),
+          );
+        }
+
+        final items = snapshot.data ?? [];
+        return _buildClientesList(items);
+      },
+    );
+  }
+
+  Widget _buildClientesList(List<ClienteConTarjeta> items) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return PremiumCard(
       title: 'Clientes de $_sucursal',
       icon: Icons.people_outline,
-      child: clientes.isEmpty
+      child: items.isEmpty
           ? const Center(
               child: Padding(
                 padding: EdgeInsets.all(32),
@@ -627,10 +757,23 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
               ),
             )
           : Column(
-              children: clientes.map((c) {
+              children: items.map((item) {
+                final c = item.cliente;
+                final tarjeta = item.tarjeta;
+                final saldo = tarjeta?.saldo ?? 0.0;
+                final tarjetaIdShort = tarjeta != null
+                    ? (tarjeta.idTarjeta.length >= 8
+                        ? tarjeta.idTarjeta.substring(0, 8)
+                        : tarjeta.idTarjeta)
+                    : '---';
+
                 return Container(
+                  key: ValueKey('cliente_${c.id}_${tarjeta?.idTarjeta}'),
                   margin: const EdgeInsets.only(bottom: 8),
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: FitNetTheme.cardLighter,
                     borderRadius: BorderRadius.circular(12),
@@ -641,60 +784,137 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(10),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: FitNetTheme.gold.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Icon(
                           Icons.person_outline,
                           color: FitNetTheme.gold,
-                          size: 18,
+                          size: 16,
                         ),
                       ),
-                      const SizedBox(width: 14),
+                      const SizedBox(width: 10),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              c.nombre,
-                              style: const TextStyle(
-                                color: FitNetTheme.textPrimary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                              ),
+                        child: InkWell(
+                          onTap: tarjeta == null
+                              ? null
+                              : () => _seleccionarParaOperar(
+                                  tarjeta.idTarjeta,
+                                  c.nombre,
+                                ),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 2,
+                              horizontal: 2,
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Tarjeta #${c.idTarjeta}',
-                              style: const TextStyle(
-                                color: FitNetTheme.textSecondary,
-                                fontSize: 12,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  c.nombre,
+                                  style: const TextStyle(
+                                    color: FitNetTheme.textPrimary,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 2),
+                                Row(
+                                  children: [
+                                    Text(
+                                      'Tarjeta #$tarjetaIdShort',
+                                      style: const TextStyle(
+                                        color: FitNetTheme.textSecondary,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                    if (screenWidth > 450) ...[
+                                      const SizedBox(width: 4),
+                                      const Text(
+                                        '· Toca',
+                                        style: TextStyle(
+                                          color: FitNetTheme.gold,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                      Container(
+                      // Acciones directas e inmediatas compactas
+                      if (tarjeta != null) ...[
+                        IconButton(
+                          constraints: const BoxConstraints(
+                            minWidth: 32,
+                            minHeight: 32,
+                          ),
+                          padding: EdgeInsets.zero,
+                          icon: const Icon(
+                            Icons.add_card_rounded,
+                            size: 17,
+                          ),
+                          color: FitNetTheme.gold,
+                          tooltip: 'Recargar tarjeta de ${c.nombre}',
+                          onPressed: () =>
+                              _cargarParaRecarga(tarjeta.idTarjeta),
+                        ),
+                        IconButton(
+                          constraints: const BoxConstraints(
+                            minWidth: 32,
+                            minHeight: 32,
+                          ),
+                          padding: EdgeInsets.zero,
+                          icon: const Icon(
+                            Icons.login_rounded,
+                            size: 17,
+                          ),
+                          color: saldo >= 80
+                              ? FitNetTheme.success
+                              : FitNetTheme.textSecondary.withValues(alpha: 0.3),
+                          tooltip: saldo >= 80
+                              ? 'Cobro inmediato (\$80.00)'
+                              : 'Saldo insuficiente (\$${saldo.toStringAsFixed(2)})',
+                          onPressed: saldo >= 80
+                              ? () => _cobrarAccesoRapido(
+                                  tarjeta.idTarjeta,
+                                  c.nombre,
+                                )
+                              : null,
+                        ),
+                        const SizedBox(width: 4),
+                      ],
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
+                          horizontal: 8,
+                          vertical: 5,
                         ),
                         decoration: BoxDecoration(
-                          color: c.saldo >= 80
+                          color: saldo >= 80
                               ? FitNetTheme.success.withValues(alpha: 0.12)
                               : FitNetTheme.error.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text(
-                          '\$${c.saldo.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            color: c.saldo >= 80
-                                ? FitNetTheme.success
-                                : FitNetTheme.error,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            '\$${saldo.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              color: saldo >= 80
+                                  ? FitNetTheme.success
+                                  : FitNetTheme.error,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),
@@ -703,6 +923,78 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                 );
               }).toList(),
             ),
+    );
+  }
+
+  // ── Indicador de sincronización pendiente ──
+  Widget _buildSyncStatusIndicator() {
+    return StreamBuilder<int>(
+      stream: _providers.syncQueueRepo.watchContadorPendientes(),
+      builder: (context, snapshot) {
+        final pendientes = snapshot.data ?? 0;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: FitNetTheme.cardDark,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.cloud_off_rounded,
+                color: FitNetTheme.gold.withValues(alpha: 0.6),
+                size: 18,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Modo local · Sincronización remota pendiente',
+                      style: TextStyle(
+                        color: FitNetTheme.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      'Operaciones pendientes: $pendientes',
+                      style: TextStyle(
+                        color: FitNetTheme.gold.withValues(alpha: 0.8),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Tooltip(
+                message:
+                    'La conexión con el servidor central se implementará próximamente.',
+                child: OutlinedButton.icon(
+                  onPressed: null, // Deshabilitado hasta Supabase
+                  icon: const Icon(Icons.sync_disabled, size: 14),
+                  label: const Text(
+                    'Sincronizar',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: FitNetTheme.textSecondary,
+                    side: BorderSide(
+                      color: Colors.white.withValues(alpha: 0.1),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

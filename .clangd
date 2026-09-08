@@ -1,0 +1,5 @@
+CompileFlags:
+  Add:
+    - -Iwindows/flutter/ephemeral
+    - -Iwindows/flutter/ephemeral/cpp_client_wrapper/include
+    - -Iwindows/runner

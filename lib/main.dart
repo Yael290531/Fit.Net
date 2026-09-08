@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'app_providers.dart';
+import 'core/database/app_database.dart';
+import 'core/remote/remote_sync_service.dart';
+import 'data/repositories/settings_repository.dart';
+import 'data/repositories/sync_queue_repository.dart';
 import 'screens/login_screen.dart';
 import 'widgets/theme_widgets.dart';
 
@@ -45,21 +50,30 @@ import 'widgets/theme_widgets.dart';
 ///
 /// ════════════════════════════════════════════════════════════════════════
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // TODO: Inicializar conexiones a bases de datos aquí.
-  // Ejemplo con mysql_client:
-  //   final conn = await MySQLConnection.createConnection(
-  //     host: '127.0.0.1',
-  //     port: 3306,
-  //     userName: 'root',
-  //     password: 'password',
-  //     databaseName: 'fitnet_global',
-  //   );
-  //   await conn.connect();
+  // ── Inicializar base de datos local (Drift + SQLite) ────────────────
+  final db = AppDatabase();
+  final settingsRepo = SettingsRepository(db);
+  final syncQueueRepo = SyncQueueRepository(db);
+  const syncService = DisabledRemoteSyncService();
 
-  runApp(const FitNetApp());
+  // El servicio de sync remoto está deshabilitado hasta conectar Supabase.
+  // Ver: lib/core/remote/remote_sync_service.dart
+  if (remoteSyncEnabled) {
+    await syncService.initialize();
+  }
+
+  runApp(
+    AppProviders(
+      db: db,
+      syncService: syncService,
+      settingsRepo: settingsRepo,
+      syncQueueRepo: syncQueueRepo,
+      child: const FitNetApp(),
+    ),
+  );
 }
 
 /// Widget raíz de la aplicación Fit.Net.
@@ -74,6 +88,18 @@ class FitNetApp extends StatelessWidget {
 
       // ── Tema oscuro premium con acentos dorados ──
       theme: FitNetTheme.theme,
+
+      builder: (context, child) {
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(
+            textScaler: MediaQuery.of(context).textScaler.clamp(
+              minScaleFactor: 0.85,
+              maxScaleFactor: 1.25,
+            ),
+          ),
+          child: child!,
+        );
+      },
 
       // ── Pantalla inicial: Login ──
       home: const LoginScreen(),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import '../app_providers.dart';
 import '../models/models.dart';
-import '../services/database_service.dart';
 import '../widgets/theme_widgets.dart';
 import 'login_screen.dart';
 
@@ -24,10 +24,11 @@ class AdminDashboard extends StatefulWidget {
 
 class _AdminDashboardState extends State<AdminDashboard>
     with SingleTickerProviderStateMixin {
-  final _db = DatabaseService();
-
   late AnimationController _animController;
   late Animation<double> _scaleAnim;
+
+  /// Sucursales conocidas en el sistema.
+  static const _sucursales = ['Sucursal Centro', 'Sucursal Norte'];
 
   @override
   void initState() {
@@ -51,7 +52,8 @@ class _AdminDashboardState extends State<AdminDashboard>
   void _logout() {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => const LoginScreen(),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const LoginScreen(),
         transitionsBuilder: (_, anim, secondAnimation, child) =>
             FadeTransition(opacity: anim, child: child),
         transitionDuration: const Duration(milliseconds: 400),
@@ -80,21 +82,7 @@ class _AdminDashboardState extends State<AdminDashboard>
 
   @override
   Widget build(BuildContext context) {
-    // ═══════════════════════════════════════════════════════════
-    // TODO: Reemplazar con consultas reales al servidor central.
-    // Ejemplo:
-    //   SELECT sucursal, SUM(monto) as ingresos
-    //   FROM movimientos_financieros
-    //   WHERE tipo_movimiento IN ('cobroAcceso', 'compra')
-    //     AND DATE(fecha) = CURDATE()
-    //   GROUP BY sucursal;
-    //
-    // Para integración global, este query consultaría una vista
-    // federada o una tabla replicada desde las BDs de cada sucursal.
-    // ═══════════════════════════════════════════════════════════
-    final ingresosTotales = _db.obtenerIngresosTotalesHoy();
-    final desglose = _db.obtenerDesglosePorSucursal();
-    final sucursales = _db.obtenerSucursales();
+    final providers = AppProviders.of(context);
     final screenWidth = MediaQuery.of(context).size.width;
     final isWide = screenWidth > 900;
 
@@ -108,91 +96,149 @@ class _AdminDashboardState extends State<AdminDashboard>
 
             // ── Contenido ──
             Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isWide ? 48 : 20,
-                  vertical: 24,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Indicador Principal: Ingresos Totales ──
-                    _buildMainIndicator(ingresosTotales),
-                    const SizedBox(height: 32),
+              child: FutureBuilder<_DashboardData>(
+                future: _loadDashboardData(providers),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(
+                      child: CircularProgressIndicator(color: FitNetTheme.gold),
+                    );
+                  }
 
-                    // ── Título de Sección ──
-                    const Row(
+                  final data = snapshot.data!;
+
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isWide ? 48 : 12,
+                      vertical: isWide ? 24 : 16,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.account_tree_outlined,
-                            color: FitNetTheme.gold, size: 20),
-                        SizedBox(width: 10),
-                        Text(
-                          'Desglose por Sucursal',
+                        // ── Indicador Principal: Ingresos Totales ──
+                        _buildMainIndicator(data.ingresosTotales),
+                        const SizedBox(height: 32),
+
+                        // ── Título de Sección ──
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.account_tree_outlined,
+                              color: FitNetTheme.gold,
+                              size: 20,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'Desglose por Sucursal',
+                              style: TextStyle(
+                                color: FitNetTheme.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Datos integrados desde las bases de datos distribuidas de cada sucursal',
                           style: TextStyle(
-                            color: FitNetTheme.textPrimary,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: -0.3,
+                            color: FitNetTheme.textSecondary,
+                            fontSize: 13,
                           ),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    const Text(
-                      'Datos integrados desde las bases de datos distribuidas de cada sucursal',
-                      style: TextStyle(
-                        color: FitNetTheme.textSecondary,
-                        fontSize: 13,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
+                        const SizedBox(height: 20),
 
-                    // ── Tarjetas por Sucursal ──
-                    if (isWide)
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: sucursales
-                            .map((s) => Expanded(
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8),
-                                    child: _buildSucursalCard(
-                                      s,
-                                      desglose[s] ?? 0,
-                                      ingresosTotales,
+                        // ── Tarjetas por Sucursal ──
+                        if (isWide)
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: _sucursales
+                                .map(
+                                  (s) => Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                      ),
+                                      child: _buildSucursalCard(
+                                        s,
+                                        data.ingresosPorSucursal[s] ?? 0,
+                                        data.ingresosTotales,
+                                        data.clientesPorSucursal[s] ?? 0,
+                                        data.movimientosPorSucursal[s] ?? 0,
+                                      ),
                                     ),
                                   ),
-                                ))
-                            .toList(),
-                      )
-                    else
-                      ...sucursales.map((s) => Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: _buildSucursalCard(
-                              s,
-                              desglose[s] ?? 0,
-                              ingresosTotales,
+                                )
+                                .toList(),
+                          )
+                        else
+                          ..._sucursales.map(
+                            (s) => Padding(
+                              padding: const EdgeInsets.only(bottom: 16),
+                              child: _buildSucursalCard(
+                                s,
+                                data.ingresosPorSucursal[s] ?? 0,
+                                data.ingresosTotales,
+                                data.clientesPorSucursal[s] ?? 0,
+                                data.movimientosPorSucursal[s] ?? 0,
+                              ),
                             ),
-                          )),
+                          ),
 
-                    const SizedBox(height: 32),
+                        const SizedBox(height: 16),
+                        // ── Indicador de sync ──
+                        _buildSyncIndicator(providers),
 
-                    // ── Diagrama de Arquitectura ──
-                    _buildArchitectureDiagram(),
+                        const SizedBox(height: 32),
 
-                    const SizedBox(height: 32),
+                        // ── Diagrama de Arquitectura ──
+                        _buildArchitectureDiagram(),
 
-                    // ── Créditos del proyecto ──
-                    _buildCreditos(),
+                        const SizedBox(height: 32),
 
-                    const SizedBox(height: 32),
-                  ],
-                ),
+                        // ── Créditos del proyecto ──
+                        _buildCreditos(),
+
+                        const SizedBox(height: 32),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  /// Carga los datos consolidados de todas las sucursales.
+  Future<_DashboardData> _loadDashboardData(AppProviders providers) async {
+    double totalIngresos = 0;
+    final ingresosPorSuc = <String, double>{};
+    final clientesPorSuc = <String, int>{};
+    final movimientosPorSuc = <String, int>{};
+
+    for (final sucursal in _sucursales) {
+      final movRepo = providers.movimientosRepo(sucursal);
+      final cliRepo = providers.clientesRepo(sucursal);
+
+      final ingresos = await movRepo.obtenerIngresosHoy();
+      final numClientes = await cliRepo.contarClientes();
+      final numMovimientos = await movRepo.contarMovimientosHoy();
+
+      ingresosPorSuc[sucursal] = ingresos;
+      clientesPorSuc[sucursal] = numClientes;
+      movimientosPorSuc[sucursal] = numMovimientos;
+      totalIngresos += ingresos;
+    }
+
+    return _DashboardData(
+      ingresosTotales: totalIngresos,
+      ingresosPorSucursal: ingresosPorSuc,
+      clientesPorSucursal: clientesPorSuc,
+      movimientosPorSucursal: movimientosPorSuc,
     );
   }
 
@@ -202,9 +248,7 @@ class _AdminDashboardState extends State<AdminDashboard>
       decoration: BoxDecoration(
         color: FitNetTheme.surfaceDark,
         border: Border(
-          bottom: BorderSide(
-            color: Colors.white.withValues(alpha: 0.05),
-          ),
+          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
         ),
       ),
       child: SafeArea(
@@ -253,42 +297,48 @@ class _AdminDashboardState extends State<AdminDashboard>
             ),
             if (MediaQuery.of(context).size.width > 550) ...[
               Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: FitNetTheme.gold.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: FitNetTheme.gold.withValues(alpha: 0.3),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: FitNetTheme.gold.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: FitNetTheme.gold.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.circle, color: FitNetTheme.success, size: 8),
+                    SizedBox(width: 6),
+                    Text(
+                      'BD Local',
+                      style: TextStyle(
+                        color: FitNetTheme.gold,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.circle, color: FitNetTheme.success, size: 8),
-                  SizedBox(width: 6),
-                  Text(
-                    'BD Global',
-                    style: TextStyle(
-                      color: FitNetTheme.gold,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
             ],
             const SizedBox(width: 8),
             IconButton(
-              icon: const Icon(Icons.refresh_rounded,
-                  color: FitNetTheme.textSecondary),
+              icon: const Icon(
+                Icons.refresh_rounded,
+                color: FitNetTheme.textSecondary,
+              ),
               tooltip: 'Actualizar Datos',
               onPressed: _refreshData,
             ),
             IconButton(
-              icon: const Icon(Icons.logout_rounded,
-                  color: FitNetTheme.textSecondary),
+              icon: const Icon(
+                Icons.logout_rounded,
+                color: FitNetTheme.textSecondary,
+              ),
               tooltip: 'Cerrar Sesión',
               onPressed: _logout,
             ),
@@ -300,6 +350,9 @@ class _AdminDashboardState extends State<AdminDashboard>
 
   /// Indicador principal de ingresos totales con animación.
   Widget _buildMainIndicator(double ingresosTotales) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isWide = screenWidth > 800;
+
     return AnimatedBuilder(
       animation: _scaleAnim,
       builder: (context, child) {
@@ -313,7 +366,10 @@ class _AdminDashboardState extends State<AdminDashboard>
       },
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(36),
+        padding: EdgeInsets.symmetric(
+          horizontal: isWide ? 36 : 16,
+          vertical: isWide ? 36 : 22,
+        ),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
@@ -344,7 +400,7 @@ class _AdminDashboardState extends State<AdminDashboard>
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(isWide ? 16 : 12),
               decoration: BoxDecoration(
                 color: FitNetTheme.gold.withValues(alpha: 0.12),
                 shape: BoxShape.circle,
@@ -352,43 +408,47 @@ class _AdminDashboardState extends State<AdminDashboard>
               child: ShaderMask(
                 shaderCallback: (bounds) =>
                     FitNetTheme.goldGradient.createShader(bounds),
-                child: const Icon(
+                child: Icon(
                   Icons.account_balance_wallet_rounded,
                   color: Colors.white,
-                  size: 36,
+                  size: isWide ? 36 : 28,
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: isWide ? 20 : 12),
             const Text(
               'INGRESOS TOTALES DE HOY',
               style: TextStyle(
                 color: FitNetTheme.textSecondary,
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
                 letterSpacing: 2,
               ),
             ),
-            const SizedBox(height: 12),
-            ShaderMask(
-              shaderCallback: (bounds) =>
-                  FitNetTheme.goldGradient.createShader(bounds),
-              child: Text(
-                '\$${ingresosTotales.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 56,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -2,
+            const SizedBox(height: 8),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: ShaderMask(
+                shaderCallback: (bounds) =>
+                    FitNetTheme.goldGradient.createShader(bounds),
+                child: Text(
+                  '\$${ingresosTotales.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: isWide ? 56 : 38,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -1,
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: 8),
             Text(
               'Suma consolidada de todas las sucursales · ${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}',
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 color: FitNetTheme.textSecondary,
-                fontSize: 13,
+                fontSize: 12,
               ),
             ),
           ],
@@ -399,11 +459,13 @@ class _AdminDashboardState extends State<AdminDashboard>
 
   /// Tarjeta de ingresos por sucursal individual.
   Widget _buildSucursalCard(
-      String sucursal, double ingresos, double totalGlobal) {
-    final porcentaje =
-        totalGlobal > 0 ? (ingresos / totalGlobal * 100) : 0.0;
-    final clientes = _db.contarClientes(sucursal);
-    final movimientos = _db.contarMovimientosHoy(sucursal);
+    String sucursal,
+    double ingresos,
+    double totalGlobal,
+    int clientes,
+    int movimientos,
+  ) {
+    final porcentaje = totalGlobal > 0 ? (ingresos / totalGlobal * 100) : 0.0;
     final iconData = sucursal.contains('Centro')
         ? Icons.location_city_rounded
         : Icons.apartment_rounded;
@@ -440,8 +502,11 @@ class _AdminDashboardState extends State<AdminDashboard>
                     ),
                     Row(
                       children: [
-                        const Icon(Icons.circle,
-                            color: FitNetTheme.success, size: 6),
+                        const Icon(
+                          Icons.circle,
+                          color: FitNetTheme.success,
+                          size: 6,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Base de datos conectada',
@@ -486,8 +551,7 @@ class _AdminDashboardState extends State<AdminDashboard>
             child: LinearProgressIndicator(
               value: porcentaje / 100,
               backgroundColor: Colors.white.withValues(alpha: 0.06),
-              valueColor:
-                  const AlwaysStoppedAnimation<Color>(FitNetTheme.gold),
+              valueColor: const AlwaysStoppedAnimation<Color>(FitNetTheme.gold),
               minHeight: 6,
             ),
           ),
@@ -510,7 +574,10 @@ class _AdminDashboardState extends State<AdminDashboard>
               _buildMiniMetric(Icons.people_outline, '$clientes', 'Clientes'),
               const SizedBox(width: 20),
               _buildMiniMetric(
-                  Icons.receipt_long, '$movimientos', 'Movimientos'),
+                Icons.receipt_long,
+                '$movimientos',
+                'Movimientos',
+              ),
             ],
           ),
         ],
@@ -549,6 +616,56 @@ class _AdminDashboardState extends State<AdminDashboard>
     );
   }
 
+  /// Indicador de estado de sincronización.
+  Widget _buildSyncIndicator(AppProviders providers) {
+    return StreamBuilder<int>(
+      stream: providers.syncQueueRepo.watchContadorPendientes(),
+      builder: (context, snapshot) {
+        final pendientes = snapshot.data ?? 0;
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: FitNetTheme.cardDark,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.cloud_off_rounded,
+                color: FitNetTheme.gold.withValues(alpha: 0.6),
+                size: 18,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Modo local · Sincronización remota pendiente',
+                      style: TextStyle(
+                        color: FitNetTheme.textSecondary,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      'Operaciones pendientes: $pendientes',
+                      style: TextStyle(
+                        color: FitNetTheme.gold.withValues(alpha: 0.8),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   /// Diagrama visual de la arquitectura de BD.
   Widget _buildArchitectureDiagram() {
     return PremiumCard(
@@ -559,7 +676,7 @@ class _AdminDashboardState extends State<AdminDashboard>
           // BD Global
           _buildDbNode(
             'Servidor Central (BD Global)',
-            'MySQL / PostgreSQL',
+            'Supabase / PostgreSQL (próximamente)',
             Icons.dns_rounded,
             isMain: true,
           ),
@@ -585,25 +702,47 @@ class _AdminDashboardState extends State<AdminDashboard>
             color: FitNetTheme.gold.withValues(alpha: 0.3),
           ),
           const SizedBox(height: 16),
-          // BDs Locales
-          Row(
-            children: [
-              Expanded(
-                child: _buildDbNode(
-                  'BD Sucursal Centro',
-                  'Distribución Local',
-                  Icons.storage_rounded,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildDbNode(
-                  'BD Sucursal Norte',
-                  'Distribución Local',
-                  Icons.storage_rounded,
-                ),
-              ),
-            ],
+          // BDs Locales (adaptable a móvil)
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isSmall = constraints.maxWidth < 450;
+              if (isSmall) {
+                return Column(
+                  children: [
+                    _buildDbNode(
+                      'BD Sucursal Centro',
+                      'Drift / SQLite (local)',
+                      Icons.storage_rounded,
+                    ),
+                    const SizedBox(height: 10),
+                    _buildDbNode(
+                      'BD Sucursal Norte',
+                      'Drift / SQLite (local)',
+                      Icons.storage_rounded,
+                    ),
+                  ],
+                );
+              }
+              return Row(
+                children: [
+                  Expanded(
+                    child: _buildDbNode(
+                      'BD Sucursal Centro',
+                      'Drift / SQLite (local)',
+                      Icons.storage_rounded,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildDbNode(
+                      'BD Sucursal Norte',
+                      'Drift / SQLite (local)',
+                      Icons.storage_rounded,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 16),
           Container(
@@ -612,17 +751,18 @@ class _AdminDashboardState extends State<AdminDashboard>
               color: FitNetTheme.gold.withValues(alpha: 0.06),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                  color: FitNetTheme.gold.withValues(alpha: 0.12)),
+                color: FitNetTheme.gold.withValues(alpha: 0.12),
+              ),
             ),
             child: const Row(
               children: [
-                Icon(Icons.info_outline,
-                    color: FitNetTheme.gold, size: 16),
+                Icon(Icons.info_outline, color: FitNetTheme.gold, size: 16),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Cada sucursal opera con su propia base de datos (distribución). '
-                    'El servidor central integra los datos para generar reportes globales (integración).',
+                    'Cada sucursal opera con su propia base de datos local (distribución). '
+                    'El servidor central integrará los datos para generar reportes globales (integración) '
+                    'cuando se conecte Supabase.',
                     style: TextStyle(
                       color: FitNetTheme.textSecondary,
                       fontSize: 12,
@@ -638,10 +778,14 @@ class _AdminDashboardState extends State<AdminDashboard>
     );
   }
 
-  Widget _buildDbNode(String name, String subtitle, IconData icon,
-      {bool isMain = false}) {
+  Widget _buildDbNode(
+    String name,
+    String subtitle,
+    IconData icon, {
+    bool isMain = false,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: isMain
             ? FitNetTheme.gold.withValues(alpha: 0.08)
@@ -655,35 +799,39 @@ class _AdminDashboardState extends State<AdminDashboard>
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             icon,
             color: isMain ? FitNetTheme.gold : FitNetTheme.textSecondary,
-            size: 20,
+            size: 18,
           ),
           const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                name,
-                style: TextStyle(
-                  color: isMain
-                      ? FitNetTheme.gold
-                      : FitNetTheme.textPrimary,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  name,
+                  style: TextStyle(
+                    color: isMain ? FitNetTheme.gold : FitNetTheme.textPrimary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              Text(
-                subtitle,
-                style: const TextStyle(
-                  color: FitNetTheme.textSecondary,
-                  fontSize: 11,
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    color: FitNetTheme.textSecondary,
+                    fontSize: 10,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -718,10 +866,7 @@ class _AdminDashboardState extends State<AdminDashboard>
           const SizedBox(height: 8),
           const Text(
             'Distribución e Integración de Bases de Datos',
-            style: TextStyle(
-              color: FitNetTheme.textSecondary,
-              fontSize: 13,
-            ),
+            style: TextStyle(color: FitNetTheme.textSecondary, fontSize: 13),
           ),
           const SizedBox(height: 16),
           Divider(color: Colors.white.withValues(alpha: 0.06)),
@@ -740,9 +885,8 @@ class _AdminDashboardState extends State<AdminDashboard>
             runSpacing: 8,
             alignment: WrapAlignment.center,
             children: [
-              _buildAuthorChip('Leonardo Yael'),
-              _buildAuthorChip('Jesús Alejandro'),
-              _buildAuthorChip('Raúl Adrián'),
+              _buildAuthorChip('Yael Lopez'),
+              _buildAuthorChip('Raúl Espinoza'),
             ],
           ),
         ],
@@ -756,9 +900,7 @@ class _AdminDashboardState extends State<AdminDashboard>
       decoration: BoxDecoration(
         color: FitNetTheme.gold.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: FitNetTheme.gold.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: FitNetTheme.gold.withValues(alpha: 0.2)),
       ),
       child: Text(
         name,
@@ -770,4 +912,19 @@ class _AdminDashboardState extends State<AdminDashboard>
       ),
     );
   }
+}
+
+/// Datos pre-cargados para el dashboard admin.
+class _DashboardData {
+  final double ingresosTotales;
+  final Map<String, double> ingresosPorSucursal;
+  final Map<String, int> clientesPorSucursal;
+  final Map<String, int> movimientosPorSucursal;
+
+  _DashboardData({
+    required this.ingresosTotales,
+    required this.ingresosPorSucursal,
+    required this.clientesPorSucursal,
+    required this.movimientosPorSucursal,
+  });
 }

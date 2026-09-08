@@ -212,7 +212,10 @@ class _LoginScreenState extends State<LoginScreen>
           position: _slideAnim,
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 32),
+              padding: EdgeInsets.symmetric(
+                horizontal: MediaQuery.of(context).size.width < 450 ? 20 : 40,
+                vertical: 24,
+              ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 400),
                 child: Column(

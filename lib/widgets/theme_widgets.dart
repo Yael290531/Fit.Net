@@ -258,57 +258,76 @@ class MetricIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: FitNetTheme.goldAccentCard,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 180;
+
+        return Container(
+          decoration: FitNetTheme.goldAccentCard,
+          padding: EdgeInsets.all(isCompact ? 10 : 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: FitNetTheme.gold.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(icon, color: FitNetTheme.gold, size: 22),
+              Row(
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(isCompact ? 6 : 10),
+                    decoration: BoxDecoration(
+                      color: FitNetTheme.gold.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(isCompact ? 8 : 10),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: FitNetTheme.gold,
+                      size: isCompact ? 16 : 22,
+                    ),
+                  ),
+                  SizedBox(width: isCompact ? 8 : 14),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        color: FitNetTheme.textSecondary,
+                        fontSize: isCompact ? 11 : 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 14),
-              Expanded(
+              SizedBox(height: isCompact ? 8 : 16),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
                 child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: FitNetTheme.textSecondary,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
+                  value,
+                  style: TextStyle(
+                    color: valueColor ?? FitNetTheme.textPrimary,
+                    fontSize: isCompact ? 22 : 32,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: isCompact ? -0.5 : -1,
                   ),
                 ),
               ),
+              if (subtitle != null && !isCompact) ...[
+                const SizedBox(height: 4),
+                Text(
+                  subtitle!,
+                  style: const TextStyle(
+                    color: FitNetTheme.textSecondary,
+                    fontSize: 12,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            value,
-            style: TextStyle(
-              color: valueColor ?? FitNetTheme.textPrimary,
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -1,
-            ),
-          ),
-          if (subtitle != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              subtitle!,
-              style: const TextStyle(
-                color: FitNetTheme.textSecondary,
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -320,6 +339,8 @@ class GoldButton extends StatelessWidget {
   final IconData? icon;
   final bool isLoading;
   final bool expand;
+  final Color? textColor;
+  final Color? iconColor;
 
   const GoldButton({
     super.key,
@@ -328,10 +349,15 @@ class GoldButton extends StatelessWidget {
     this.icon,
     this.isLoading = false,
     this.expand = true,
+    this.textColor,
+    this.iconColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    final effectiveTextColor = textColor ?? FitNetTheme.backgroundDark;
+    final effectiveIconColor = iconColor ?? effectiveTextColor;
+
     final button = Container(
       decoration: BoxDecoration(
         gradient: FitNetTheme.goldGradient,
@@ -356,25 +382,25 @@ class GoldButton extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (isLoading)
-                  const SizedBox(
+                  SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        FitNetTheme.backgroundDark,
+                        effectiveTextColor,
                       ),
                     ),
                   )
                 else ...[
                   if (icon != null) ...[
-                    Icon(icon, color: FitNetTheme.backgroundDark, size: 20),
+                    Icon(icon, color: effectiveIconColor, size: 20),
                     const SizedBox(width: 10),
                   ],
                   Text(
                     label,
-                    style: const TextStyle(
-                      color: FitNetTheme.backgroundDark,
+                    style: TextStyle(
+                      color: effectiveTextColor,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.5,
