@@ -31,6 +31,10 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
   final _nombreClienteCtrl = TextEditingController();
   final _telefonoClienteCtrl = TextEditingController();
   final _saldoInicialCtrl = TextEditingController();
+  bool _vincularTarjeta = false;
+  final _numTarjetaCreditoCtrl = TextEditingController();
+  final _expiracionCtrl = TextEditingController();
+  final _pinCtrl = TextEditingController();
 
   // Controladores para Recarga
   final _idRecargaCtrl = TextEditingController();
@@ -43,6 +47,7 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
   String get _sucursal => widget.usuario.sucursalAsignada ?? 'Sucursal Centro';
 
   int _selectedTab = 0;
+  int _selectedSubTab = 0; // Sub-tab dentro de Clientes: 0=Registrar, 1=Recargar, 2=Suscripción
 
   // ── Repositorios (se inicializan en didChangeDependencies) ──
   late ClientesRepository _clientesRepo;
@@ -237,12 +242,18 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
 
   void _cargarParaRecarga(String idTarjeta) {
     _idRecargaCtrl.text = idTarjeta;
-    setState(() => _selectedTab = 2);
+    setState(() {
+      _selectedTab = 1;
+      _selectedSubTab = 1;
+    });
   }
 
   void _cargarParaSuscripcion(String idTarjeta) {
     _idSuscripcionCtrl.text = idTarjeta;
-    setState(() => _selectedTab = 3);
+    setState(() {
+      _selectedTab = 1;
+      _selectedSubTab = 2;
+    });
   }
 
   // ── Editar cliente (diálogo modal) ──
@@ -504,7 +515,7 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                           const SizedBox(height: 16),
                         ],
                       )
-                    : _selectedTab == 4
+                    : _selectedTab == 2
                     // ── Historial: lista de movimientos ──
                     ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -513,23 +524,39 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                           const SizedBox(height: 16),
                         ],
                       )
-                    // ── Operaciones: formulario + lista de clientes ──
+                    // ── Clientes: sub-tabs + formulario + lista ──
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          _buildClientesSubTabBar(),
+                          const SizedBox(height: 20),
                           if (isWide)
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Expanded(flex: 5, child: _buildTabContent()),
-                                const SizedBox(width: 24),
-                                Expanded(flex: 4, child: _buildClientesListStream()),
+                                Expanded(
+                                  flex: _selectedSubTab == 0 ? 8 : 5, 
+                                  child: Center(
+                                    child: ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        maxWidth: _selectedSubTab == 0 ? 600 : double.infinity
+                                      ),
+                                      child: _buildTabContent(),
+                                    ),
+                                  ),
+                                ),
+                                if (_selectedSubTab != 0) ...[
+                                  const SizedBox(width: 24),
+                                  Expanded(flex: 4, child: _buildClientesListStream()),
+                                ]
                               ],
                             )
                           else ...[
                             _buildTabContent(),
-                            const SizedBox(height: 24),
-                            _buildClientesListStream(),
+                            if (_selectedSubTab != 0) ...[
+                              const SizedBox(height: 24),
+                              _buildClientesListStream(),
+                            ]
                           ],
                           const SizedBox(height: 16),
                         ],
@@ -728,23 +755,15 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
     final tabs = [
       (
         Icons.dashboard_rounded,
-        isMobile ? 'Dashboard' : 'Dashboard',
+        'Dashboard',
       ),
       (
-        Icons.person_add_outlined,
-        isMobile ? 'Registrar' : 'Registrar Cliente',
-      ),
-      (
-        Icons.credit_card_outlined,
-        isMobile ? 'Recargar' : 'Recargar Tarjeta',
-      ),
-      (
-        Icons.card_membership_rounded,
-        isMobile ? 'Suscripción' : 'Cobrar Suscripción',
+        Icons.people_rounded,
+        'Clientes',
       ),
       (
         Icons.history_rounded,
-        isMobile ? 'Historial' : 'Historial',
+        'Historial',
       ),
     ];
 
@@ -819,16 +838,106 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
   }
 
   Widget _buildTabContent() {
-    switch (_selectedTab) {
-      case 1:
+    switch (_selectedSubTab) {
+      case 0:
         return _buildRegistrarClienteForm();
-      case 2:
+      case 1:
         return _buildRecargarTarjetaForm();
-      case 3:
+      case 2:
         return _buildCobrarSuscripcionForm();
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  // ── Sub-tabs dentro de Clientes ──
+  Widget _buildClientesSubTabBar() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 550;
+
+    final subTabs = [
+      (
+        Icons.person_add_outlined,
+        isMobile ? 'Registrar' : 'Registrar Cliente',
+      ),
+      (
+        Icons.credit_card_outlined,
+        isMobile ? 'Recargar' : 'Recargar Tarjeta',
+      ),
+      (
+        Icons.card_membership_rounded,
+        isMobile ? 'Suscripción' : 'Cobrar Suscripción',
+      ),
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: FitNetTheme.cardDark,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      padding: const EdgeInsets.all(4),
+      child: Row(
+        children: subTabs.asMap().entries.map((entry) {
+          final idx = entry.key;
+          final (icon, label) = entry.value;
+          final isSelected = _selectedSubTab == idx;
+
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => setState(() => _selectedSubTab = idx),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                padding: EdgeInsets.symmetric(
+                  vertical: isMobile ? 10 : 12,
+                  horizontal: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? FitNetTheme.gold.withValues(alpha: 0.12)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  border: isSelected
+                      ? Border.all(
+                          color: FitNetTheme.gold.withValues(alpha: 0.3),
+                        )
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      icon,
+                      size: isMobile ? 16 : 18,
+                      color: isSelected
+                          ? FitNetTheme.gold
+                          : FitNetTheme.textSecondary,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: isSelected
+                              ? FitNetTheme.gold
+                              : FitNetTheme.textSecondary,
+                          fontSize: isMobile ? 12 : 13,
+                          fontWeight: isSelected
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
   }
 
   // ── Formulario: Registrar Cliente ──
@@ -867,13 +976,109 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
               prefixIcon: Icon(Icons.attach_money_rounded),
             ),
           ),
+          const SizedBox(height: 16),
+          // Botón para vincular tarjeta
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: () => setState(() => _vincularTarjeta = !_vincularTarjeta),
+              icon: Icon(
+                _vincularTarjeta ? Icons.credit_card_off_outlined : Icons.add_card_outlined,
+                color: FitNetTheme.gold,
+              ),
+              label: Text(
+                _vincularTarjeta ? 'Quitar Tarjeta Bancaria' : 'Vincular Tarjeta Bancaria',
+                style: const TextStyle(color: FitNetTheme.gold),
+              ),
+            ),
+          ),
+          
+          // Formulario de tarjeta bancaria desplegable
+          if (_vincularTarjeta) ...[
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: FitNetTheme.backgroundDark.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: FitNetTheme.gold.withValues(alpha: 0.2)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Datos de la Tarjeta para Cobro Rápido',
+                    style: TextStyle(
+                      color: FitNetTheme.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _numTarjetaCreditoCtrl,
+                    keyboardType: TextInputType.number,
+                    maxLength: 16,
+                    style: const TextStyle(color: FitNetTheme.textPrimary, letterSpacing: 2),
+                    decoration: const InputDecoration(
+                      labelText: 'Número de Tarjeta',
+                      prefixIcon: Icon(Icons.credit_card_rounded),
+                      counterText: '',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _expiracionCtrl,
+                          keyboardType: TextInputType.datetime,
+                          maxLength: 5,
+                          style: const TextStyle(color: FitNetTheme.textPrimary),
+                          decoration: const InputDecoration(
+                            labelText: 'Vencimiento (MM/AA)',
+                            prefixIcon: Icon(Icons.date_range_rounded),
+                            counterText: '',
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextFormField(
+                          controller: _pinCtrl,
+                          keyboardType: TextInputType.number,
+                          maxLength: 4,
+                          obscureText: true,
+                          style: const TextStyle(color: FitNetTheme.textPrimary),
+                          decoration: const InputDecoration(
+                            labelText: 'PIN',
+                            prefixIcon: Icon(Icons.password_rounded),
+                            counterText: '',
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+          
           const SizedBox(height: 24),
           GoldButton(
             label: 'Registrar Cliente',
             icon: Icons.person_add_rounded,
             textColor: const Color(0xFF5B4002),
             iconColor: const Color(0xFF5B4002),
-            onPressed: _registrarCliente,
+            onPressed: () {
+              // Limpiar datos de tarjeta al registrar para simular que se guardó
+              if (_vincularTarjeta) {
+                _numTarjetaCreditoCtrl.clear();
+                _expiracionCtrl.clear();
+                _pinCtrl.clear();
+                setState(() => _vincularTarjeta = false);
+              }
+              _registrarCliente();
+            },
           ),
         ],
       ),
