@@ -145,6 +145,10 @@ class _AdminDashboardState extends State<AdminDashboard>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        // ── Indicador de sync ──
+                        _buildSyncIndicator(providers),
+                        const SizedBox(height: 24),
+
                         // ── Indicador Principal: Ingresos Totales ──
                         _buildMainIndicator(data.ingresosTotales),
                         const SizedBox(height: 32),
@@ -261,10 +265,6 @@ class _AdminDashboardState extends State<AdminDashboard>
                         ),
 
                         const SizedBox(height: 16),
-                        // ── Indicador de sync ──
-                        _buildSyncIndicator(providers),
-
-                        const SizedBox(height: 32),
 
                         // ── Diagrama de Arquitectura ──
                         _buildArchitectureDiagram(),

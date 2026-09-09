@@ -237,12 +237,12 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
 
   void _cargarParaRecarga(String idTarjeta) {
     _idRecargaCtrl.text = idTarjeta;
-    setState(() => _selectedTab = 1);
+    setState(() => _selectedTab = 2);
   }
 
   void _cargarParaSuscripcion(String idTarjeta) {
     _idSuscripcionCtrl.text = idTarjeta;
-    setState(() => _selectedTab = 2);
+    setState(() => _selectedTab = 3);
   }
 
   // ── Editar cliente (diálogo modal) ──
@@ -483,6 +483,9 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
             // ── Header ──
             _buildHeader(),
 
+            // ── Tab bar fijo debajo del header ──
+            _buildTabBar(),
+
             // ── Contenido ──
             Expanded(
               child: SingleChildScrollView(
@@ -490,39 +493,47 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                   horizontal: isWide ? 40 : 12,
                   vertical: isWide ? 20 : 14,
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Métricas rápidas (reactivas con StreamBuilder) ──
-                    _buildQuickMetricsStream(isWide),
-                    const SizedBox(height: 28),
-
-                    // ── Tabs de operaciones ──
-                    _buildTabBar(),
-                    const SizedBox(height: 20),
-
-                    // ── Contenido del tab seleccionado + lista clientes ──
-                    if (isWide)
-                      Row(
+                child: _selectedTab == 0
+                    // ── Dashboard: métricas + lista de clientes ──
+                    ? Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(flex: 5, child: _buildTabContent()),
-                          const SizedBox(width: 24),
-                          Expanded(flex: 4, child: _buildClientesListStream()),
+                          _buildQuickMetricsStream(isWide),
+                          const SizedBox(height: 24),
+                          _buildClientesListStream(),
+                          const SizedBox(height: 16),
                         ],
                       )
-                    else ...[
-                      _buildTabContent(),
-                      const SizedBox(height: 24),
-                      _buildClientesListStream(),
-                    ],
-
-                    const SizedBox(height: 16),
-                    // ── Indicador de operaciones pendientes ──
-                    _buildSyncStatusIndicator(),
-                    const SizedBox(height: 32),
-                  ],
-                ),
+                    : _selectedTab == 4
+                    // ── Historial: lista de movimientos ──
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildHistorialMovimientos(),
+                          const SizedBox(height: 16),
+                        ],
+                      )
+                    // ── Operaciones: formulario + lista de clientes ──
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (isWide)
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 5, child: _buildTabContent()),
+                                const SizedBox(width: 24),
+                                Expanded(flex: 4, child: _buildClientesListStream()),
+                              ],
+                            )
+                          else ...[
+                            _buildTabContent(),
+                            const SizedBox(height: 24),
+                            _buildClientesListStream(),
+                          ],
+                          const SizedBox(height: 16),
+                        ],
+                      ),
               ),
             ),
           ],
@@ -622,7 +633,9 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                 ),
               ),
             ],
-            const SizedBox(width: 12),
+            const SizedBox(width: 8),
+            _buildSyncHeaderButton(),
+            const SizedBox(width: 4),
             IconButton(
               icon: const Icon(
                 Icons.logout_rounded,
@@ -714,6 +727,10 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
 
     final tabs = [
       (
+        Icons.dashboard_rounded,
+        isMobile ? 'Dashboard' : 'Dashboard',
+      ),
+      (
         Icons.person_add_outlined,
         isMobile ? 'Registrar' : 'Registrar Cliente',
       ),
@@ -725,15 +742,20 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
         Icons.card_membership_rounded,
         isMobile ? 'Suscripción' : 'Cobrar Suscripción',
       ),
+      (
+        Icons.history_rounded,
+        isMobile ? 'Historial' : 'Historial',
+      ),
     ];
 
     return Container(
       decoration: BoxDecoration(
-        color: FitNetTheme.cardDark,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        color: FitNetTheme.surfaceDark,
+        border: Border(
+          bottom: BorderSide(color: Colors.white.withValues(alpha: 0.05)),
+        ),
       ),
-      padding: const EdgeInsets.all(4),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Row(
         children: tabs.asMap().entries.map((entry) {
           final idx = entry.key;
@@ -750,15 +772,14 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                   horizontal: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? FitNetTheme.gold.withValues(alpha: 0.12)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(10),
-                  border: isSelected
-                      ? Border.all(
-                          color: FitNetTheme.gold.withValues(alpha: 0.3),
-                        )
-                      : null,
+                  border: Border(
+                    bottom: BorderSide(
+                      color: isSelected
+                          ? FitNetTheme.gold
+                          : Colors.transparent,
+                      width: 2,
+                    ),
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -799,11 +820,11 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
 
   Widget _buildTabContent() {
     switch (_selectedTab) {
-      case 0:
-        return _buildRegistrarClienteForm();
       case 1:
-        return _buildRecargarTarjetaForm();
+        return _buildRegistrarClienteForm();
       case 2:
+        return _buildRecargarTarjetaForm();
+      case 3:
         return _buildCobrarSuscripcionForm();
       default:
         return const SizedBox.shrink();
@@ -1322,98 +1343,200 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
   // ── Indicador de sincronización pendiente ──
   bool _isSyncing = false;
 
-  Widget _buildSyncStatusIndicator() {
+  Widget _buildSyncHeaderButton() {
     return StreamBuilder<int>(
       stream: _providers.syncQueueRepo.watchContadorPendientes(),
       builder: (context, snapshot) {
         final pendientes = snapshot.data ?? 0;
         final hasPending = pendientes > 0;
 
+        return IconButton(
+          tooltip: _isSyncing
+              ? 'Sincronizando...'
+              : hasPending
+                  ? '$pendientes pendientes de sincronizar'
+                  : 'Sincronizado',
+          icon: _isSyncing
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: FitNetTheme.gold,
+                  ),
+                )
+              : Icon(
+                  hasPending
+                      ? Icons.cloud_upload_rounded
+                      : Icons.cloud_done_rounded,
+                  color: _isSyncing
+                      ? FitNetTheme.gold
+                      : hasPending
+                          ? FitNetTheme.gold
+                          : FitNetTheme.success,
+                ),
+          onPressed: _isSyncing ? null : _syncToSupabase,
+        );
+      },
+    );
+  }
+
+  // ── Historial de movimientos ──
+  Widget _buildHistorialMovimientos() {
+    return StreamBuilder<List<Movimiento>>(
+      stream: _movimientosRepo.watchTodosLosMovimientos(),
+      builder: (context, snapshot) {
+        final movimientos = snapshot.data ?? [];
+
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: FitNetTheme.cardDark,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-          ),
-          child: Row(
+          decoration: FitNetTheme.premiumCard,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                _isSyncing
-                    ? Icons.cloud_sync_rounded
-                    : hasPending
-                        ? Icons.cloud_upload_rounded
-                        : Icons.cloud_done_rounded,
-                color: _isSyncing
-                    ? FitNetTheme.gold
-                    : hasPending
-                        ? FitNetTheme.gold.withValues(alpha: 0.6)
-                        : FitNetTheme.success.withValues(alpha: 0.6),
-                size: 18,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _isSyncing
-                          ? 'Sincronizando con Supabase...'
-                          : hasPending
-                              ? 'Operaciones pendientes de sincronizar'
-                              : 'Sincronizado con Supabase',
-                      style: const TextStyle(
-                        color: FitNetTheme.textSecondary,
-                        fontSize: 12,
-                      ),
+              // ── Título ──
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: FitNetTheme.gold.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    Text(
-                      _isSyncing
-                          ? 'Enviando datos...'
-                          : 'Operaciones pendientes: $pendientes',
-                      style: TextStyle(
-                        color: _isSyncing
-                            ? FitNetTheme.gold
-                            : hasPending
-                                ? FitNetTheme.gold.withValues(alpha: 0.8)
-                                : FitNetTheme.success.withValues(alpha: 0.8),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: const Icon(
+                      Icons.history_rounded,
+                      color: FitNetTheme.gold,
+                      size: 18,
                     ),
-                  ],
-                ),
-              ),
-              OutlinedButton.icon(
-                onPressed: _isSyncing ? null : () => _syncToSupabase(),
-                icon: _isSyncing
-                    ? const SizedBox(
-                        width: 14,
-                        height: 14,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: FitNetTheme.gold,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Historial de Movimientos',
+                          style: TextStyle(
+                            color: FitNetTheme.textPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
-                      )
-                    : const Icon(Icons.sync, size: 14),
-                label: Text(
-                  _isSyncing ? 'Enviando...' : 'Sincronizar',
-                  style: const TextStyle(fontSize: 11),
-                ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor:
-                      hasPending ? FitNetTheme.gold : FitNetTheme.textSecondary,
-                  side: BorderSide(
-                    color: hasPending
-                        ? FitNetTheme.gold.withValues(alpha: 0.3)
-                        : Colors.white.withValues(alpha: 0.1),
+                        Text(
+                          '${movimientos.length} movimientos registrados',
+                          style: const TextStyle(
+                            color: FitNetTheme.textSecondary,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 8,
-                  ),
-                ),
+                ],
               ),
+              const SizedBox(height: 16),
+              Divider(color: Colors.white.withValues(alpha: 0.06)),
+              const SizedBox(height: 8),
+
+              if (movimientos.isEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 32),
+                  alignment: Alignment.center,
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.receipt_long_outlined,
+                        color: FitNetTheme.textSecondary.withValues(alpha: 0.3),
+                        size: 48,
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Sin movimientos registrados',
+                        style: TextStyle(
+                          color: FitNetTheme.textSecondary,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                ...movimientos.map((mov) {
+                  final isRecarga = mov.tipo == 'recarga';
+                  final isPago = mov.tipo == 'pago';
+                  final iconData = isRecarga
+                      ? Icons.add_circle_outline
+                      : isPago
+                          ? Icons.remove_circle_outline
+                          : Icons.swap_horiz_rounded;
+                  final iconColor = isRecarga
+                      ? FitNetTheme.success
+                      : isPago
+                          ? FitNetTheme.gold
+                          : FitNetTheme.textSecondary;
+                  final tipoLabel = isRecarga
+                      ? 'Recarga'
+                      : isPago
+                          ? 'Pago de suscripción'
+                          : mov.tipo[0].toUpperCase() + mov.tipo.substring(1);
+                  final shortId = mov.idTarjeta.length >= 8
+                      ? mov.idTarjeta.substring(0, 8)
+                      : mov.idTarjeta;
+                  final fecha = mov.fecha;
+                  final fechaStr =
+                      '${fecha.day.toString().padLeft(2, '0')}/'
+                      '${fecha.month.toString().padLeft(2, '0')}/'
+                      '${fecha.year} '
+                      '${fecha.hour.toString().padLeft(2, '0')}:'
+                      '${fecha.minute.toString().padLeft(2, '0')}';
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: iconColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Icon(iconData, color: iconColor, size: 16),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                tipoLabel,
+                                style: const TextStyle(
+                                  color: FitNetTheme.textPrimary,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                'Tarjeta #$shortId · $fechaStr',
+                                style: const TextStyle(
+                                  color: FitNetTheme.textSecondary,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text(
+                          '${isRecarga ? '+' : '-'}\$${mov.monto.toStringAsFixed(2)}',
+                          style: TextStyle(
+                            color: isRecarga ? FitNetTheme.success : FitNetTheme.gold,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
             ],
           ),
         );
