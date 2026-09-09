@@ -86,6 +86,7 @@ class SupabaseRemoteSyncService implements RemoteSyncService {
     'cliente': 'clientes',
     'tarjeta': 'tarjetas',
     'movimiento': 'movimientos',
+    'suscripcion': 'suscripciones',
   };
 
   @override
@@ -156,8 +157,8 @@ class SupabaseRemoteSyncService implements RemoteSyncService {
 
   @override
   Future<void> pullRemoteChanges() async {
+    // ── Descargar clientes ──
     try {
-      // ── Descargar clientes ──
       final clientesRemoto =
           await _client.from('clientes').select() as List<dynamic>;
       for (final row in clientesRemoto) {
@@ -177,8 +178,13 @@ class SupabaseRemoteSyncService implements RemoteSyncService {
               ),
             );
       }
+    } catch (e) {
+      // ignore: avoid_print
+      print('[Supabase Pull clientes] Error: $e');
+    }
 
-      // ── Descargar tarjetas ──
+    // ── Descargar tarjetas ──
+    try {
       final tarjetasRemoto =
           await _client.from('tarjetas').select() as List<dynamic>;
       for (final row in tarjetasRemoto) {
@@ -198,8 +204,13 @@ class SupabaseRemoteSyncService implements RemoteSyncService {
               ),
             );
       }
+    } catch (e) {
+      // ignore: avoid_print
+      print('[Supabase Pull tarjetas] Error: $e');
+    }
 
-      // ── Descargar movimientos ──
+    // ── Descargar movimientos ──
+    try {
       final movimientosRemoto =
           await _client.from('movimientos').select() as List<dynamic>;
       for (final row in movimientosRemoto) {
@@ -221,10 +232,40 @@ class SupabaseRemoteSyncService implements RemoteSyncService {
             );
       }
     } catch (e) {
-      // En caso de error, el pull falla silenciosamente.
-      // Los datos locales se mantienen intactos.
       // ignore: avoid_print
-      print('[Supabase Pull] Error: $e');
+      print('[Supabase Pull movimientos] Error: $e');
+    }
+
+    // ── Descargar suscripciones ──
+    try {
+      final suscripcionesRemoto =
+          await _client.from('suscripciones').select() as List<dynamic>;
+      for (final row in suscripcionesRemoto) {
+        final data = row as Map<String, dynamic>;
+        await _db.into(_db.suscripciones).insertOnConflictUpdate(
+              SuscripcionesCompanion.insert(
+                id: data['id'] as String,
+                clienteId: data['cliente_id'] as String,
+                sucursalId: data['sucursal_id'] as String,
+                tipoSuscripcion: data['tipo_suscripcion'] as String,
+                montoPagado: (data['monto_pagado'] as num).toDouble(),
+                fechaInicio: DateTime.parse(data['fecha_inicio'] as String),
+                fechaFin: DateTime.parse(data['fecha_fin'] as String),
+                syncStatus: const Value('synced'),
+                createdAt: DateTime.parse(data['created_at'] as String),
+                updatedAt: DateTime.parse(data['updated_at'] as String),
+              ),
+            );
+      }
+    } on PostgrestException catch (e) {
+      // Si la tabla aún no existe en Supabase (PGRST205), se ignora para no saturar la consola
+      if (e.code != 'PGRST205') {
+        // ignore: avoid_print
+        print('[Supabase Pull suscripciones] Error: ${e.message}');
+      }
+    } catch (e) {
+      // ignore: avoid_print
+      print('[Supabase Pull suscripciones] Error: $e');
     }
   }
 }

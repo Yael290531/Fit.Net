@@ -2,7 +2,6 @@
 ///
 /// Representa la tarjeta de acceso de un cliente con su saldo disponible
 /// para pagos en las sucursales de la cadena Fit.Net.
-
 class ClienteTarjeta {
   final int idTarjeta;
   final String nombre;

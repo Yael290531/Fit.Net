@@ -1737,6 +1737,649 @@ class MovimientosCompanion extends UpdateCompanion<Movimiento> {
   }
 }
 
+class $SuscripcionesTable extends Suscripciones
+    with TableInfo<$SuscripcionesTable, Suscripcione> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SuscripcionesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _clienteIdMeta = const VerificationMeta(
+    'clienteId',
+  );
+  @override
+  late final GeneratedColumn<String> clienteId = GeneratedColumn<String>(
+    'cliente_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'REFERENCES clientes (id) ON DELETE CASCADE',
+    ),
+  );
+  static const VerificationMeta _sucursalIdMeta = const VerificationMeta(
+    'sucursalId',
+  );
+  @override
+  late final GeneratedColumn<String> sucursalId = GeneratedColumn<String>(
+    'sucursal_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _tipoSuscripcionMeta = const VerificationMeta(
+    'tipoSuscripcion',
+  );
+  @override
+  late final GeneratedColumn<String> tipoSuscripcion = GeneratedColumn<String>(
+    'tipo_suscripcion',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _montoPagadoMeta = const VerificationMeta(
+    'montoPagado',
+  );
+  @override
+  late final GeneratedColumn<double> montoPagado = GeneratedColumn<double>(
+    'monto_pagado',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fechaInicioMeta = const VerificationMeta(
+    'fechaInicio',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fechaInicio = GeneratedColumn<DateTime>(
+    'fecha_inicio',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fechaFinMeta = const VerificationMeta(
+    'fechaFin',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fechaFin = GeneratedColumn<DateTime>(
+    'fecha_fin',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('pending'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    clienteId,
+    sucursalId,
+    tipoSuscripcion,
+    montoPagado,
+    fechaInicio,
+    fechaFin,
+    syncStatus,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'suscripciones';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<Suscripcione> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('cliente_id')) {
+      context.handle(
+        _clienteIdMeta,
+        clienteId.isAcceptableOrUnknown(data['cliente_id']!, _clienteIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clienteIdMeta);
+    }
+    if (data.containsKey('sucursal_id')) {
+      context.handle(
+        _sucursalIdMeta,
+        sucursalId.isAcceptableOrUnknown(data['sucursal_id']!, _sucursalIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sucursalIdMeta);
+    }
+    if (data.containsKey('tipo_suscripcion')) {
+      context.handle(
+        _tipoSuscripcionMeta,
+        tipoSuscripcion.isAcceptableOrUnknown(
+          data['tipo_suscripcion']!,
+          _tipoSuscripcionMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_tipoSuscripcionMeta);
+    }
+    if (data.containsKey('monto_pagado')) {
+      context.handle(
+        _montoPagadoMeta,
+        montoPagado.isAcceptableOrUnknown(
+          data['monto_pagado']!,
+          _montoPagadoMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_montoPagadoMeta);
+    }
+    if (data.containsKey('fecha_inicio')) {
+      context.handle(
+        _fechaInicioMeta,
+        fechaInicio.isAcceptableOrUnknown(
+          data['fecha_inicio']!,
+          _fechaInicioMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_fechaInicioMeta);
+    }
+    if (data.containsKey('fecha_fin')) {
+      context.handle(
+        _fechaFinMeta,
+        fechaFin.isAcceptableOrUnknown(data['fecha_fin']!, _fechaFinMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_fechaFinMeta);
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  Suscripcione map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return Suscripcione(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      clienteId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cliente_id'],
+      )!,
+      sucursalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sucursal_id'],
+      )!,
+      tipoSuscripcion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}tipo_suscripcion'],
+      )!,
+      montoPagado: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}monto_pagado'],
+      )!,
+      fechaInicio: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_inicio'],
+      )!,
+      fechaFin: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_fin'],
+      )!,
+      syncStatus: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sync_status'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $SuscripcionesTable createAlias(String alias) {
+    return $SuscripcionesTable(attachedDatabase, alias);
+  }
+}
+
+class Suscripcione extends DataClass implements Insertable<Suscripcione> {
+  /// UUID de la suscripción (PK).
+  final String id;
+
+  /// FK → clientes.id
+  final String clienteId;
+
+  /// Sucursal donde se registró la suscripción.
+  final String sucursalId;
+
+  /// Tipo de plan. Valores: 'mensual', 'semanal', 'diaria'.
+  final String tipoSuscripcion;
+
+  /// Monto pagado por la suscripción (500, 150, 80).
+  final double montoPagado;
+
+  /// Fecha/hora de inicio de la suscripción.
+  final DateTime fechaInicio;
+
+  /// Fecha/hora de expiración de la suscripción.
+  final DateTime fechaFin;
+
+  /// Estado de sincronización. Valores: 'pending', 'synced', 'failed'.
+  final String syncStatus;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const Suscripcione({
+    required this.id,
+    required this.clienteId,
+    required this.sucursalId,
+    required this.tipoSuscripcion,
+    required this.montoPagado,
+    required this.fechaInicio,
+    required this.fechaFin,
+    required this.syncStatus,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['cliente_id'] = Variable<String>(clienteId);
+    map['sucursal_id'] = Variable<String>(sucursalId);
+    map['tipo_suscripcion'] = Variable<String>(tipoSuscripcion);
+    map['monto_pagado'] = Variable<double>(montoPagado);
+    map['fecha_inicio'] = Variable<DateTime>(fechaInicio);
+    map['fecha_fin'] = Variable<DateTime>(fechaFin);
+    map['sync_status'] = Variable<String>(syncStatus);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  SuscripcionesCompanion toCompanion(bool nullToAbsent) {
+    return SuscripcionesCompanion(
+      id: Value(id),
+      clienteId: Value(clienteId),
+      sucursalId: Value(sucursalId),
+      tipoSuscripcion: Value(tipoSuscripcion),
+      montoPagado: Value(montoPagado),
+      fechaInicio: Value(fechaInicio),
+      fechaFin: Value(fechaFin),
+      syncStatus: Value(syncStatus),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory Suscripcione.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return Suscripcione(
+      id: serializer.fromJson<String>(json['id']),
+      clienteId: serializer.fromJson<String>(json['clienteId']),
+      sucursalId: serializer.fromJson<String>(json['sucursalId']),
+      tipoSuscripcion: serializer.fromJson<String>(json['tipoSuscripcion']),
+      montoPagado: serializer.fromJson<double>(json['montoPagado']),
+      fechaInicio: serializer.fromJson<DateTime>(json['fechaInicio']),
+      fechaFin: serializer.fromJson<DateTime>(json['fechaFin']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'clienteId': serializer.toJson<String>(clienteId),
+      'sucursalId': serializer.toJson<String>(sucursalId),
+      'tipoSuscripcion': serializer.toJson<String>(tipoSuscripcion),
+      'montoPagado': serializer.toJson<double>(montoPagado),
+      'fechaInicio': serializer.toJson<DateTime>(fechaInicio),
+      'fechaFin': serializer.toJson<DateTime>(fechaFin),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  Suscripcione copyWith({
+    String? id,
+    String? clienteId,
+    String? sucursalId,
+    String? tipoSuscripcion,
+    double? montoPagado,
+    DateTime? fechaInicio,
+    DateTime? fechaFin,
+    String? syncStatus,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => Suscripcione(
+    id: id ?? this.id,
+    clienteId: clienteId ?? this.clienteId,
+    sucursalId: sucursalId ?? this.sucursalId,
+    tipoSuscripcion: tipoSuscripcion ?? this.tipoSuscripcion,
+    montoPagado: montoPagado ?? this.montoPagado,
+    fechaInicio: fechaInicio ?? this.fechaInicio,
+    fechaFin: fechaFin ?? this.fechaFin,
+    syncStatus: syncStatus ?? this.syncStatus,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  Suscripcione copyWithCompanion(SuscripcionesCompanion data) {
+    return Suscripcione(
+      id: data.id.present ? data.id.value : this.id,
+      clienteId: data.clienteId.present ? data.clienteId.value : this.clienteId,
+      sucursalId: data.sucursalId.present
+          ? data.sucursalId.value
+          : this.sucursalId,
+      tipoSuscripcion: data.tipoSuscripcion.present
+          ? data.tipoSuscripcion.value
+          : this.tipoSuscripcion,
+      montoPagado: data.montoPagado.present
+          ? data.montoPagado.value
+          : this.montoPagado,
+      fechaInicio: data.fechaInicio.present
+          ? data.fechaInicio.value
+          : this.fechaInicio,
+      fechaFin: data.fechaFin.present ? data.fechaFin.value : this.fechaFin,
+      syncStatus: data.syncStatus.present
+          ? data.syncStatus.value
+          : this.syncStatus,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('Suscripcione(')
+          ..write('id: $id, ')
+          ..write('clienteId: $clienteId, ')
+          ..write('sucursalId: $sucursalId, ')
+          ..write('tipoSuscripcion: $tipoSuscripcion, ')
+          ..write('montoPagado: $montoPagado, ')
+          ..write('fechaInicio: $fechaInicio, ')
+          ..write('fechaFin: $fechaFin, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    clienteId,
+    sucursalId,
+    tipoSuscripcion,
+    montoPagado,
+    fechaInicio,
+    fechaFin,
+    syncStatus,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is Suscripcione &&
+          other.id == this.id &&
+          other.clienteId == this.clienteId &&
+          other.sucursalId == this.sucursalId &&
+          other.tipoSuscripcion == this.tipoSuscripcion &&
+          other.montoPagado == this.montoPagado &&
+          other.fechaInicio == this.fechaInicio &&
+          other.fechaFin == this.fechaFin &&
+          other.syncStatus == this.syncStatus &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class SuscripcionesCompanion extends UpdateCompanion<Suscripcione> {
+  final Value<String> id;
+  final Value<String> clienteId;
+  final Value<String> sucursalId;
+  final Value<String> tipoSuscripcion;
+  final Value<double> montoPagado;
+  final Value<DateTime> fechaInicio;
+  final Value<DateTime> fechaFin;
+  final Value<String> syncStatus;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const SuscripcionesCompanion({
+    this.id = const Value.absent(),
+    this.clienteId = const Value.absent(),
+    this.sucursalId = const Value.absent(),
+    this.tipoSuscripcion = const Value.absent(),
+    this.montoPagado = const Value.absent(),
+    this.fechaInicio = const Value.absent(),
+    this.fechaFin = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  SuscripcionesCompanion.insert({
+    required String id,
+    required String clienteId,
+    required String sucursalId,
+    required String tipoSuscripcion,
+    required double montoPagado,
+    required DateTime fechaInicio,
+    required DateTime fechaFin,
+    this.syncStatus = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       clienteId = Value(clienteId),
+       sucursalId = Value(sucursalId),
+       tipoSuscripcion = Value(tipoSuscripcion),
+       montoPagado = Value(montoPagado),
+       fechaInicio = Value(fechaInicio),
+       fechaFin = Value(fechaFin),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<Suscripcione> custom({
+    Expression<String>? id,
+    Expression<String>? clienteId,
+    Expression<String>? sucursalId,
+    Expression<String>? tipoSuscripcion,
+    Expression<double>? montoPagado,
+    Expression<DateTime>? fechaInicio,
+    Expression<DateTime>? fechaFin,
+    Expression<String>? syncStatus,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (clienteId != null) 'cliente_id': clienteId,
+      if (sucursalId != null) 'sucursal_id': sucursalId,
+      if (tipoSuscripcion != null) 'tipo_suscripcion': tipoSuscripcion,
+      if (montoPagado != null) 'monto_pagado': montoPagado,
+      if (fechaInicio != null) 'fecha_inicio': fechaInicio,
+      if (fechaFin != null) 'fecha_fin': fechaFin,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  SuscripcionesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? clienteId,
+    Value<String>? sucursalId,
+    Value<String>? tipoSuscripcion,
+    Value<double>? montoPagado,
+    Value<DateTime>? fechaInicio,
+    Value<DateTime>? fechaFin,
+    Value<String>? syncStatus,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return SuscripcionesCompanion(
+      id: id ?? this.id,
+      clienteId: clienteId ?? this.clienteId,
+      sucursalId: sucursalId ?? this.sucursalId,
+      tipoSuscripcion: tipoSuscripcion ?? this.tipoSuscripcion,
+      montoPagado: montoPagado ?? this.montoPagado,
+      fechaInicio: fechaInicio ?? this.fechaInicio,
+      fechaFin: fechaFin ?? this.fechaFin,
+      syncStatus: syncStatus ?? this.syncStatus,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (clienteId.present) {
+      map['cliente_id'] = Variable<String>(clienteId.value);
+    }
+    if (sucursalId.present) {
+      map['sucursal_id'] = Variable<String>(sucursalId.value);
+    }
+    if (tipoSuscripcion.present) {
+      map['tipo_suscripcion'] = Variable<String>(tipoSuscripcion.value);
+    }
+    if (montoPagado.present) {
+      map['monto_pagado'] = Variable<double>(montoPagado.value);
+    }
+    if (fechaInicio.present) {
+      map['fecha_inicio'] = Variable<DateTime>(fechaInicio.value);
+    }
+    if (fechaFin.present) {
+      map['fecha_fin'] = Variable<DateTime>(fechaFin.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SuscripcionesCompanion(')
+          ..write('id: $id, ')
+          ..write('clienteId: $clienteId, ')
+          ..write('sucursalId: $sucursalId, ')
+          ..write('tipoSuscripcion: $tipoSuscripcion, ')
+          ..write('montoPagado: $montoPagado, ')
+          ..write('fechaInicio: $fechaInicio, ')
+          ..write('fechaFin: $fechaFin, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $SyncQueueTable extends SyncQueue
     with TableInfo<$SyncQueueTable, SyncQueueData> {
   @override
@@ -2636,6 +3279,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $ClientesTable clientes = $ClientesTable(this);
   late final $TarjetasTable tarjetas = $TarjetasTable(this);
   late final $MovimientosTable movimientos = $MovimientosTable(this);
+  late final $SuscripcionesTable suscripciones = $SuscripcionesTable(this);
   late final $SyncQueueTable syncQueue = $SyncQueueTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
   @override
@@ -2646,6 +3290,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     clientes,
     tarjetas,
     movimientos,
+    suscripciones,
     syncQueue,
     appSettings,
   ];
@@ -2657,6 +3302,13 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         limitUpdateKind: UpdateKind.delete,
       ),
       result: [TableUpdate('tarjetas', kind: UpdateKind.delete)],
+    ),
+    WritePropagation(
+      on: TableUpdateQuery.onTableName(
+        'clientes',
+        limitUpdateKind: UpdateKind.delete,
+      ),
+      result: [TableUpdate('suscripciones', kind: UpdateKind.delete)],
     ),
   ]);
 }
@@ -2704,6 +3356,24 @@ final class $$ClientesTableReferences
     ).filter((f) => f.clienteId.id.sqlEquals($_itemColumn<String>('id')!));
 
     final cache = $_typedResult.readTableOrNull(_tarjetasRefsTable($_db));
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: cache),
+    );
+  }
+
+  static MultiTypedResultKey<$SuscripcionesTable, List<Suscripcione>>
+  _suscripcionesRefsTable(_$AppDatabase db) => MultiTypedResultKey.fromTable(
+    db.suscripciones,
+    aliasName: 'clientes__id__suscripciones__cliente_id',
+  );
+
+  $$SuscripcionesTableProcessedTableManager get suscripcionesRefs {
+    final manager = $$SuscripcionesTableTableManager(
+      $_db,
+      $_db.suscripciones,
+    ).filter((f) => f.clienteId.id.sqlEquals($_itemColumn<String>('id')!));
+
+    final cache = $_typedResult.readTableOrNull(_suscripcionesRefsTable($_db));
     return ProcessedTableManager(
       manager.$state.copyWith(prefetchedData: cache),
     );
@@ -2775,6 +3445,31 @@ class $$ClientesTableFilterComposer
           }) => $$TarjetasTableFilterComposer(
             $db: $db,
             $table: $db.tarjetas,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
+
+  Expression<bool> suscripcionesRefs(
+    Expression<bool> Function($$SuscripcionesTableFilterComposer f) f,
+  ) {
+    final $$SuscripcionesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.suscripciones,
+      getReferencedColumn: (t) => t.clienteId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SuscripcionesTableFilterComposer(
+            $db: $db,
+            $table: $db.suscripciones,
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -2896,6 +3591,31 @@ class $$ClientesTableAnnotationComposer
     );
     return f(composer);
   }
+
+  Expression<T> suscripcionesRefs<T extends Object>(
+    Expression<T> Function($$SuscripcionesTableAnnotationComposer a) f,
+  ) {
+    final $$SuscripcionesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.id,
+      referencedTable: $db.suscripciones,
+      getReferencedColumn: (t) => t.clienteId,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$SuscripcionesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.suscripciones,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return f(composer);
+  }
 }
 
 class $$ClientesTableTableManager
@@ -2911,7 +3631,7 @@ class $$ClientesTableTableManager
           $$ClientesTableUpdateCompanionBuilder,
           (Cliente, $$ClientesTableReferences),
           Cliente,
-          PrefetchHooks Function({bool tarjetasRefs})
+          PrefetchHooks Function({bool tarjetasRefs, bool suscripcionesRefs})
         > {
   $$ClientesTableTableManager(_$AppDatabase db, $ClientesTable table)
     : super(
@@ -2976,28 +3696,63 @@ class $$ClientesTableTableManager
                 ),
               )
               .toList(),
-          prefetchHooksCallback: ({tarjetasRefs = false}) {
-            return PrefetchHooks(
-              db: db,
-              explicitlyWatchedTables: [if (tarjetasRefs) db.tarjetas],
-              addJoins: null,
-              getPrefetchedDataCallback: (items) async {
-                return [
-                  if (tarjetasRefs)
-                    await $_getPrefetchedData<Cliente, $ClientesTable, Tarjeta>(
-                      currentTable: table,
-                      referencedTable: $$ClientesTableReferences
-                          ._tarjetasRefsTable(db),
-                      managerFromTypedResult: (p0) =>
-                          $$ClientesTableReferences(db, table, p0).tarjetasRefs,
-                      referencedItemsForCurrentItem: (item, referencedItems) =>
-                          referencedItems.where((e) => e.clienteId == item.id),
-                      typedResults: items,
-                    ),
-                ];
+          prefetchHooksCallback:
+              ({tarjetasRefs = false, suscripcionesRefs = false}) {
+                return PrefetchHooks(
+                  db: db,
+                  explicitlyWatchedTables: [
+                    if (tarjetasRefs) db.tarjetas,
+                    if (suscripcionesRefs) db.suscripciones,
+                  ],
+                  addJoins: null,
+                  getPrefetchedDataCallback: (items) async {
+                    return [
+                      if (tarjetasRefs)
+                        await $_getPrefetchedData<
+                          Cliente,
+                          $ClientesTable,
+                          Tarjeta
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ClientesTableReferences
+                              ._tarjetasRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ClientesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).tarjetasRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.clienteId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                      if (suscripcionesRefs)
+                        await $_getPrefetchedData<
+                          Cliente,
+                          $ClientesTable,
+                          Suscripcione
+                        >(
+                          currentTable: table,
+                          referencedTable: $$ClientesTableReferences
+                              ._suscripcionesRefsTable(db),
+                          managerFromTypedResult: (p0) =>
+                              $$ClientesTableReferences(
+                                db,
+                                table,
+                                p0,
+                              ).suscripcionesRefs,
+                          referencedItemsForCurrentItem:
+                              (item, referencedItems) => referencedItems.where(
+                                (e) => e.clienteId == item.id,
+                              ),
+                          typedResults: items,
+                        ),
+                    ];
+                  },
+                );
               },
-            );
-          },
         ),
       );
 }
@@ -3014,7 +3769,7 @@ typedef $$ClientesTableProcessedTableManager =
       $$ClientesTableUpdateCompanionBuilder,
       (Cliente, $$ClientesTableReferences),
       Cliente,
-      PrefetchHooks Function({bool tarjetasRefs})
+      PrefetchHooks Function({bool tarjetasRefs, bool suscripcionesRefs})
     >;
 typedef $$TarjetasTableCreateCompanionBuilder =
     TarjetasCompanion Function({
@@ -3928,6 +4683,432 @@ typedef $$MovimientosTableProcessedTableManager =
       Movimiento,
       PrefetchHooks Function({bool idTarjeta})
     >;
+typedef $$SuscripcionesTableCreateCompanionBuilder =
+    SuscripcionesCompanion Function({
+      required String id,
+      required String clienteId,
+      required String sucursalId,
+      required String tipoSuscripcion,
+      required double montoPagado,
+      required DateTime fechaInicio,
+      required DateTime fechaFin,
+      Value<String> syncStatus,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$SuscripcionesTableUpdateCompanionBuilder =
+    SuscripcionesCompanion Function({
+      Value<String> id,
+      Value<String> clienteId,
+      Value<String> sucursalId,
+      Value<String> tipoSuscripcion,
+      Value<double> montoPagado,
+      Value<DateTime> fechaInicio,
+      Value<DateTime> fechaFin,
+      Value<String> syncStatus,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+final class $$SuscripcionesTableReferences
+    extends BaseReferences<_$AppDatabase, $SuscripcionesTable, Suscripcione> {
+  $$SuscripcionesTableReferences(
+    super.$_db,
+    super.$_table,
+    super.$_typedResult,
+  );
+
+  static $ClientesTable _clienteIdTable(_$AppDatabase db) =>
+      db.clientes.createAlias('suscripciones__cliente_id__clientes__id');
+
+  $$ClientesTableProcessedTableManager get clienteId {
+    final $_column = $_itemColumn<String>('cliente_id')!;
+
+    final manager = $$ClientesTableTableManager(
+      $_db,
+      $_db.clientes,
+    ).filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_clienteIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+      manager.$state.copyWith(prefetchedData: [item]),
+    );
+  }
+}
+
+class $$SuscripcionesTableFilterComposer
+    extends Composer<_$AppDatabase, $SuscripcionesTable> {
+  $$SuscripcionesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sucursalId => $composableBuilder(
+    column: $table.sucursalId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get tipoSuscripcion => $composableBuilder(
+    column: $table.tipoSuscripcion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get montoPagado => $composableBuilder(
+    column: $table.montoPagado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaInicio => $composableBuilder(
+    column: $table.fechaInicio,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaFin => $composableBuilder(
+    column: $table.fechaFin,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  $$ClientesTableFilterComposer get clienteId {
+    final $$ClientesTableFilterComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clienteId,
+      referencedTable: $db.clientes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClientesTableFilterComposer(
+            $db: $db,
+            $table: $db.clientes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SuscripcionesTableOrderingComposer
+    extends Composer<_$AppDatabase, $SuscripcionesTable> {
+  $$SuscripcionesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sucursalId => $composableBuilder(
+    column: $table.sucursalId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get tipoSuscripcion => $composableBuilder(
+    column: $table.tipoSuscripcion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get montoPagado => $composableBuilder(
+    column: $table.montoPagado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaInicio => $composableBuilder(
+    column: $table.fechaInicio,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaFin => $composableBuilder(
+    column: $table.fechaFin,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  $$ClientesTableOrderingComposer get clienteId {
+    final $$ClientesTableOrderingComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clienteId,
+      referencedTable: $db.clientes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClientesTableOrderingComposer(
+            $db: $db,
+            $table: $db.clientes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SuscripcionesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SuscripcionesTable> {
+  $$SuscripcionesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get sucursalId => $composableBuilder(
+    column: $table.sucursalId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get tipoSuscripcion => $composableBuilder(
+    column: $table.tipoSuscripcion,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get montoPagado => $composableBuilder(
+    column: $table.montoPagado,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get fechaInicio => $composableBuilder(
+    column: $table.fechaInicio,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get fechaFin =>
+      $composableBuilder(column: $table.fechaFin, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  $$ClientesTableAnnotationComposer get clienteId {
+    final $$ClientesTableAnnotationComposer composer = $composerBuilder(
+      composer: this,
+      getCurrentColumn: (t) => t.clienteId,
+      referencedTable: $db.clientes,
+      getReferencedColumn: (t) => t.id,
+      builder:
+          (
+            joinBuilder, {
+            $addJoinBuilderToRootComposer,
+            $removeJoinBuilderFromRootComposer,
+          }) => $$ClientesTableAnnotationComposer(
+            $db: $db,
+            $table: $db.clientes,
+            $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+            joinBuilder: joinBuilder,
+            $removeJoinBuilderFromRootComposer:
+                $removeJoinBuilderFromRootComposer,
+          ),
+    );
+    return composer;
+  }
+}
+
+class $$SuscripcionesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $SuscripcionesTable,
+          Suscripcione,
+          $$SuscripcionesTableFilterComposer,
+          $$SuscripcionesTableOrderingComposer,
+          $$SuscripcionesTableAnnotationComposer,
+          $$SuscripcionesTableCreateCompanionBuilder,
+          $$SuscripcionesTableUpdateCompanionBuilder,
+          (Suscripcione, $$SuscripcionesTableReferences),
+          Suscripcione,
+          PrefetchHooks Function({bool clienteId})
+        > {
+  $$SuscripcionesTableTableManager(_$AppDatabase db, $SuscripcionesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SuscripcionesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SuscripcionesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SuscripcionesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> clienteId = const Value.absent(),
+                Value<String> sucursalId = const Value.absent(),
+                Value<String> tipoSuscripcion = const Value.absent(),
+                Value<double> montoPagado = const Value.absent(),
+                Value<DateTime> fechaInicio = const Value.absent(),
+                Value<DateTime> fechaFin = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => SuscripcionesCompanion(
+                id: id,
+                clienteId: clienteId,
+                sucursalId: sucursalId,
+                tipoSuscripcion: tipoSuscripcion,
+                montoPagado: montoPagado,
+                fechaInicio: fechaInicio,
+                fechaFin: fechaFin,
+                syncStatus: syncStatus,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String clienteId,
+                required String sucursalId,
+                required String tipoSuscripcion,
+                required double montoPagado,
+                required DateTime fechaInicio,
+                required DateTime fechaFin,
+                Value<String> syncStatus = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => SuscripcionesCompanion.insert(
+                id: id,
+                clienteId: clienteId,
+                sucursalId: sucursalId,
+                tipoSuscripcion: tipoSuscripcion,
+                montoPagado: montoPagado,
+                fechaInicio: fechaInicio,
+                fechaFin: fechaFin,
+                syncStatus: syncStatus,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable(table),
+                  $$SuscripcionesTableReferences(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: ({clienteId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins:
+                  <
+                    T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic
+                    >
+                  >(state) {
+                    if (clienteId) {
+                      state =
+                          state.withJoin(
+                                currentTable: table,
+                                currentColumn: table.clienteId,
+                                referencedTable: $$SuscripcionesTableReferences
+                                    ._clienteIdTable(db),
+                                referencedColumn: $$SuscripcionesTableReferences
+                                    ._clienteIdTable(db)
+                                    .id,
+                              )
+                              as T;
+                    }
+
+                    return state;
+                  },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ),
+      );
+}
+
+typedef $$SuscripcionesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $SuscripcionesTable,
+      Suscripcione,
+      $$SuscripcionesTableFilterComposer,
+      $$SuscripcionesTableOrderingComposer,
+      $$SuscripcionesTableAnnotationComposer,
+      $$SuscripcionesTableCreateCompanionBuilder,
+      $$SuscripcionesTableUpdateCompanionBuilder,
+      (Suscripcione, $$SuscripcionesTableReferences),
+      Suscripcione,
+      PrefetchHooks Function({bool clienteId})
+    >;
 typedef $$SyncQueueTableCreateCompanionBuilder =
     SyncQueueCompanion Function({
       required String id,
@@ -4399,6 +5580,8 @@ class $AppDatabaseManager {
       $$TarjetasTableTableManager(_db, _db.tarjetas);
   $$MovimientosTableTableManager get movimientos =>
       $$MovimientosTableTableManager(_db, _db.movimientos);
+  $$SuscripcionesTableTableManager get suscripciones =>
+      $$SuscripcionesTableTableManager(_db, _db.suscripciones);
   $$SyncQueueTableTableManager get syncQueue =>
       $$SyncQueueTableTableManager(_db, _db.syncQueue);
   $$AppSettingsTableTableManager get appSettings =>

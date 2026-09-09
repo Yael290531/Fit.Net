@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import '../app_providers.dart';
+import '../core/database/app_database.dart';
+import '../data/repositories/clientes_repository.dart';
+import '../data/repositories/suscripciones_repository.dart';
 import '../models/models.dart';
 import '../widgets/theme_widgets.dart';
 import 'login_screen.dart';
@@ -193,6 +196,7 @@ class _AdminDashboardState extends State<AdminDashboard>
                                         data.ingresosTotales,
                                         data.clientesPorSucursal[s] ?? 0,
                                         data.movimientosPorSucursal[s] ?? 0,
+                                        data,
                                       ),
                                     ),
                                   ),
@@ -209,9 +213,52 @@ class _AdminDashboardState extends State<AdminDashboard>
                                 data.ingresosTotales,
                                 data.clientesPorSucursal[s] ?? 0,
                                 data.movimientosPorSucursal[s] ?? 0,
+                                data,
                               ),
                             ),
                           ),
+
+                        const SizedBox(height: 24),
+
+                        // ── Gestión de Clientes por Sucursal ──
+                        const Row(
+                          children: [
+                            Icon(
+                              Icons.manage_accounts_outlined,
+                              color: FitNetTheme.gold,
+                              size: 20,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'Gestión de Clientes',
+                              style: TextStyle(
+                                color: FitNetTheme.textPrimary,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        const Text(
+                          'Administrar suscripciones y datos de clientes por sucursal',
+                          style: TextStyle(
+                            color: FitNetTheme.textSecondary,
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+
+                        ..._sucursales.map(
+                          (s) => Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: _ClientesGestionSection(
+                              sucursal: s,
+                              providers: providers,
+                            ),
+                          ),
+                        ),
 
                         const SizedBox(height: 16),
                         // ── Indicador de sync ──
@@ -246,18 +293,25 @@ class _AdminDashboardState extends State<AdminDashboard>
     final ingresosPorSuc = <String, double>{};
     final clientesPorSuc = <String, int>{};
     final movimientosPorSuc = <String, int>{};
+    final suscripcionesActivasPorSuc = <String, int>{};
+    final porExpirarPorSuc = <String, int>{};
 
     for (final sucursal in _sucursales) {
       final movRepo = providers.movimientosRepo(sucursal);
       final cliRepo = providers.clientesRepo(sucursal);
+      final susRepo = providers.suscripcionesRepo(sucursal);
 
       final ingresos = await movRepo.obtenerIngresosHoy();
       final numClientes = await cliRepo.contarClientes();
       final numMovimientos = await movRepo.contarMovimientosHoy();
+      final numSuscripciones = await susRepo.contarSuscripcionesActivas();
+      final numPorExpirar = await susRepo.contarPorExpirar(dias: 3);
 
       ingresosPorSuc[sucursal] = ingresos;
       clientesPorSuc[sucursal] = numClientes;
       movimientosPorSuc[sucursal] = numMovimientos;
+      suscripcionesActivasPorSuc[sucursal] = numSuscripciones;
+      porExpirarPorSuc[sucursal] = numPorExpirar;
       totalIngresos += ingresos;
     }
 
@@ -266,6 +320,8 @@ class _AdminDashboardState extends State<AdminDashboard>
       ingresosPorSucursal: ingresosPorSuc,
       clientesPorSucursal: clientesPorSuc,
       movimientosPorSucursal: movimientosPorSuc,
+      suscripcionesActivasPorSuc: suscripcionesActivasPorSuc,
+      porExpirarPorSuc: porExpirarPorSuc,
     );
   }
 
@@ -491,6 +547,7 @@ class _AdminDashboardState extends State<AdminDashboard>
     double totalGlobal,
     int clientes,
     int movimientos,
+    _DashboardData data,
   ) {
     final porcentaje = totalGlobal > 0 ? (ingresos / totalGlobal * 100) : 0.0;
     final iconData = sucursal.contains('Centro')
@@ -604,6 +661,22 @@ class _AdminDashboardState extends State<AdminDashboard>
                 Icons.receipt_long,
                 '$movimientos',
                 'Movimientos',
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _buildMiniMetric(
+                Icons.card_membership_rounded,
+                '${data.suscripcionesActivasPorSuc[sucursal] ?? 0}',
+                'Suscripciones',
+              ),
+              const SizedBox(width: 20),
+              _buildMiniMetric(
+                Icons.warning_amber_rounded,
+                '${data.porExpirarPorSuc[sucursal] ?? 0}',
+                'Por expirar (3d)',
               ),
             ],
           ),
@@ -947,11 +1020,355 @@ class _DashboardData {
   final Map<String, double> ingresosPorSucursal;
   final Map<String, int> clientesPorSucursal;
   final Map<String, int> movimientosPorSucursal;
+  final Map<String, int> suscripcionesActivasPorSuc;
+  final Map<String, int> porExpirarPorSuc;
 
   _DashboardData({
     required this.ingresosTotales,
     required this.ingresosPorSucursal,
     required this.clientesPorSucursal,
     required this.movimientosPorSucursal,
+    required this.suscripcionesActivasPorSuc,
+    required this.porExpirarPorSuc,
   });
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// Widget de Gestión de Clientes por Sucursal
+// ═══════════════════════════════════════════════════════════════════════
+class _ClientesGestionSection extends StatefulWidget {
+  final String sucursal;
+  final AppProviders providers;
+
+  const _ClientesGestionSection({
+    required this.sucursal,
+    required this.providers,
+  });
+
+  @override
+  State<_ClientesGestionSection> createState() => _ClientesGestionSectionState();
+}
+
+class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
+  bool _isExpanded = false;
+  late SuscripcionesRepository _suscripcionesRepo;
+  late ClientesRepository _clientesRepo;
+
+  @override
+  void initState() {
+    super.initState();
+    _suscripcionesRepo = widget.providers.suscripcionesRepo(widget.sucursal);
+    _clientesRepo = widget.providers.clientesRepo(widget.sucursal);
+  }
+
+  void _showSnackBar(String message, {bool isError = false, bool isSuccess = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(
+              isError ? Icons.error_outline : isSuccess ? Icons.check_circle_outline : Icons.info_outline,
+              color: isError ? FitNetTheme.error : isSuccess ? FitNetTheme.success : FitNetTheme.gold,
+              size: 20,
+            ),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: FitNetTheme.cardDark,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  Future<void> _editarCliente(Cliente cliente) async {
+    final nombreCtrl = TextEditingController(text: cliente.nombre);
+    final telefonoCtrl = TextEditingController(text: cliente.telefono ?? '');
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: FitNetTheme.cardDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: FitNetTheme.gold.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.edit, color: FitNetTheme.gold, size: 18),
+            ),
+            const SizedBox(width: 12),
+            const Text(
+              'Editar Cliente',
+              style: TextStyle(color: FitNetTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: nombreCtrl,
+              style: const TextStyle(color: FitNetTheme.textPrimary),
+              decoration: const InputDecoration(labelText: 'Nombre Completo', prefixIcon: Icon(Icons.badge_outlined)),
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: telefonoCtrl,
+              style: const TextStyle(color: FitNetTheme.textPrimary),
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(labelText: 'Teléfono (opcional)', prefixIcon: Icon(Icons.phone_outlined)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar', style: TextStyle(color: FitNetTheme.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: FitNetTheme.gold,
+              foregroundColor: const Color(0xFF5B4002),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Guardar'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        await _clientesRepo.editarCliente(
+          cliente.id,
+          nombre: nombreCtrl.text.trim().isNotEmpty ? nombreCtrl.text.trim() : null,
+          telefono: telefonoCtrl.text.trim().isNotEmpty ? telefonoCtrl.text.trim() : null,
+        );
+        if (!mounted) return;
+        _showSnackBar('✓ Cliente actualizado', isSuccess: true);
+      } catch (e) {
+        if (!mounted) return;
+        _showSnackBar('Error: $e', isError: true);
+      }
+    }
+    nombreCtrl.dispose();
+    telefonoCtrl.dispose();
+  }
+
+  Future<void> _eliminarCliente(Cliente cliente, bool tieneSuscripcion) async {
+    if (tieneSuscripcion) {
+      _showSnackBar('No se puede eliminar: suscripción activa', isError: true);
+      return;
+    }
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: FitNetTheme.cardDark,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Eliminar Cliente', style: TextStyle(color: FitNetTheme.textPrimary)),
+        content: Text(
+          '¿Eliminar a "${cliente.nombre}"? Quedará en espera 20 días.',
+          style: const TextStyle(color: FitNetTheme.textSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar', style: TextStyle(color: FitNetTheme.textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: FitNetTheme.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true) {
+      try {
+        await _clientesRepo.eliminarCliente(cliente.id);
+        if (!mounted) return;
+        _showSnackBar('✓ Cliente eliminado', isSuccess: true);
+      } catch (e) {
+        if (!mounted) return;
+        _showSnackBar('Error: $e', isError: true);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final iconData = widget.sucursal.contains('Centro')
+        ? Icons.location_city_rounded
+        : Icons.apartment_rounded;
+
+    return Container(
+      decoration: FitNetTheme.premiumCard,
+      child: Column(
+        children: [
+          // Header expandible
+          InkWell(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: FitNetTheme.gold.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(iconData, color: FitNetTheme.gold, size: 18),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      widget.sucursal,
+                      style: const TextStyle(
+                        color: FitNetTheme.textPrimary,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    _isExpanded ? Icons.expand_less : Icons.expand_more,
+                    color: FitNetTheme.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          // Lista de clientes expandible
+          if (_isExpanded)
+            StreamBuilder<List<ClienteConTarjetaYSuscripcion>>(
+              stream: _suscripcionesRepo.watchClientesConTarjetaYSuscripcion(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Center(child: CircularProgressIndicator(color: FitNetTheme.gold)),
+                  );
+                }
+
+                final items = snapshot.data!;
+                if (items.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text('No hay clientes', style: TextStyle(color: FitNetTheme.textSecondary)),
+                  );
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Column(
+                    children: items.map((item) {
+                      final c = item.cliente;
+                      final saldo = item.tarjeta?.saldo ?? 0.0;
+                      final diasRestantes = item.diasRestantes;
+                      final tieneSuscripcion = item.tieneSuscripcionActiva;
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: FitNetTheme.cardLighter,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    c.nombre,
+                                    style: const TextStyle(
+                                      color: FitNetTheme.textPrimary,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: tieneSuscripcion
+                                              ? FitNetTheme.success.withValues(alpha: 0.1)
+                                              : FitNetTheme.textSecondary.withValues(alpha: 0.08),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        child: Text(
+                                          tieneSuscripcion
+                                              ? '$diasRestantes día${diasRestantes != 1 ? 's' : ''}'
+                                              : 'Sin suscripción',
+                                          style: TextStyle(
+                                            color: tieneSuscripcion
+                                                ? FitNetTheme.success
+                                                : FitNetTheme.textSecondary,
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Saldo: \$${saldo.toStringAsFixed(2)}',
+                                        style: const TextStyle(
+                                          color: FitNetTheme.textSecondary,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                              padding: EdgeInsets.zero,
+                              icon: const Icon(Icons.edit_outlined, size: 15),
+                              color: FitNetTheme.textSecondary,
+                              tooltip: 'Editar',
+                              onPressed: () => _editarCliente(c),
+                            ),
+                            IconButton(
+                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                              padding: EdgeInsets.zero,
+                              icon: const Icon(Icons.delete_outline, size: 15),
+                              color: tieneSuscripcion
+                                  ? FitNetTheme.textSecondary.withValues(alpha: 0.3)
+                                  : FitNetTheme.error.withValues(alpha: 0.7),
+                              tooltip: tieneSuscripcion ? 'Suscripción activa' : 'Eliminar',
+                              onPressed: () => _eliminarCliente(c, tieneSuscripcion),
+                            ),
+                          ],
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
 }

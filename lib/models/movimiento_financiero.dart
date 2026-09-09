@@ -2,7 +2,6 @@
 ///
 /// Cada movimiento registra una transacción en la sucursal:
 /// recargas, cobros de acceso, y cualquier otra operación monetaria.
-
 enum TipoMovimiento {
   recarga,
   cobroAcceso,

@@ -102,3 +102,27 @@ CREATE INDEX IF NOT EXISTS idx_tarjetas_sucursal ON tarjetas(sucursal_id);
 CREATE INDEX IF NOT EXISTS idx_movimientos_tarjeta ON movimientos(id_tarjeta);
 CREATE INDEX IF NOT EXISTS idx_movimientos_sucursal ON movimientos(sucursal_id);
 CREATE INDEX IF NOT EXISTS idx_movimientos_fecha ON movimientos(fecha);
+
+-- ── 5. Tabla: suscripciones ──────────────────────────────────────
+CREATE TABLE IF NOT EXISTS suscripciones (
+  id TEXT PRIMARY KEY,
+  cliente_id TEXT NOT NULL REFERENCES clientes(id) ON DELETE CASCADE,
+  sucursal_id TEXT NOT NULL,
+  tipo_suscripcion TEXT NOT NULL CHECK (tipo_suscripcion IN ('mensual', 'semanal', 'diaria')),
+  monto_pagado DOUBLE PRECISION NOT NULL CHECK (monto_pagado > 0),
+  fecha_inicio TIMESTAMPTZ NOT NULL,
+  fecha_fin TIMESTAMPTZ NOT NULL,
+  sync_status TEXT NOT NULL DEFAULT 'pending',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE suscripciones ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Permitir lectura pública" ON suscripciones FOR SELECT USING (true);
+CREATE POLICY "Permitir inserción pública" ON suscripciones FOR INSERT WITH CHECK (true);
+CREATE POLICY "Permitir actualización pública" ON suscripciones FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Permitir eliminación pública" ON suscripciones FOR DELETE USING (true);
+
+CREATE INDEX IF NOT EXISTS idx_suscripciones_cliente ON suscripciones(cliente_id);
+CREATE INDEX IF NOT EXISTS idx_suscripciones_sucursal ON suscripciones(sucursal_id);
+CREATE INDEX IF NOT EXISTS idx_suscripciones_fecha_fin ON suscripciones(fecha_fin);

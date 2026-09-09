@@ -5,6 +5,7 @@ import '../core/remote/remote_sync_service.dart';
 import '../data/repositories/clientes_repository.dart';
 import '../data/repositories/movimientos_repository.dart';
 import '../data/repositories/settings_repository.dart';
+import '../data/repositories/suscripciones_repository.dart';
 import '../data/repositories/sync_queue_repository.dart';
 import '../data/repositories/tarjetas_repository.dart';
 
@@ -56,6 +57,10 @@ class AppProviders extends InheritedWidget {
   /// Crea un [MovimientosRepository] filtrado por [sucursalId].
   MovimientosRepository movimientosRepo(String sucursalId) =>
       MovimientosRepository(db, sucursalId: sucursalId);
+
+  /// Crea un [SuscripcionesRepository] filtrado por [sucursalId].
+  SuscripcionesRepository suscripcionesRepo(String sucursalId) =>
+      SuscripcionesRepository(db, sucursalId: sucursalId);
 
   @override
   bool updateShouldNotify(AppProviders oldWidget) =>

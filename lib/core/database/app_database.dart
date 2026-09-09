@@ -7,6 +7,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'tables/clientes_table.dart';
 import 'tables/tarjetas_table.dart';
 import 'tables/movimientos_table.dart';
+import 'tables/suscripciones_table.dart';
 import 'tables/sync_queue_table.dart';
 import 'tables/app_settings_table.dart';
 
@@ -24,7 +25,7 @@ part 'app_database.g.dart';
 // Para conectar Supabase en el futuro, ver:
 //   lib/core/remote/remote_sync_service.dart
 // ═══════════════════════════════════════════════════════════════════════
-@DriftDatabase(tables: [Clientes, Tarjetas, Movimientos, SyncQueue, AppSettings])
+@DriftDatabase(tables: [Clientes, Tarjetas, Movimientos, Suscripciones, SyncQueue, AppSettings])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -32,7 +33,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -42,8 +43,10 @@ class AppDatabase extends _$AppDatabase {
           await customStatement('PRAGMA foreign_keys = ON');
         },
         onUpgrade: (Migrator m, int from, int to) async {
-          // Futuras migraciones se agregan aquí:
-          // if (from < 2) { await m.addColumn(clientes, clientes.telefono); }
+          if (from < 2) {
+            // v2: Agregar tabla de suscripciones.
+            await m.createTable(suscripciones);
+          }
         },
         beforeOpen: (details) async {
           // Garantizar que las llaves foráneas estén habilitadas en cada apertura.
@@ -57,3 +60,4 @@ class AppDatabase extends _$AppDatabase {
 QueryExecutor _openConnection() {
   return driftDatabase(name: 'fitnet_db');
 }
+

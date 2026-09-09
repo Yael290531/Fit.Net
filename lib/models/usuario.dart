@@ -3,7 +3,6 @@
 /// Cada usuario tiene un rol que determina su nivel de acceso:
 /// - [RolUsuario.adminGlobal]: Acceso al dashboard administrativo global.
 /// - [RolUsuario.cajero]: Acceso al dashboard de operación por sucursal.
-
 enum RolUsuario {
   adminGlobal,
   cajero,

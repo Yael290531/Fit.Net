@@ -4,7 +4,9 @@
 /// ```dart
 /// import 'package:fit_net/models/models.dart';
 /// ```
+library;
 
 export 'usuario.dart';
 export 'cliente_tarjeta.dart';
 export 'movimiento_financiero.dart';
+export 'suscripcion.dart';
