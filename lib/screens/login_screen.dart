@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'dart:ui';
 import '../models/models.dart';
 import '../services/database_service.dart';
 import '../widgets/theme_widgets.dart';
@@ -130,32 +131,43 @@ class _LoginScreenState extends State<LoginScreen>
     final screenWidth = MediaQuery.of(context).size.width;
     final isWide = screenWidth > 800;
 
-    return Scaffold(
-      body: Row(
-        children: [
-          // ══════════════════════════════════════════════
-          // PANEL IZQUIERDO – Imagen del gimnasio
-          // ══════════════════════════════════════════════
-          if (isWide)
+    if (isWide) {
+      return Scaffold(
+        body: Row(
+          children: [
+            // PANEL IZQUIERDO – Imagen del gimnasio
             Expanded(
               flex: 5,
-              child: _buildImagePanel(),
+              child: _buildImagePanel(isMobile: false),
             ),
-
-          // ══════════════════════════════════════════════
-          // PANEL DERECHO – Formulario de login
-          // ══════════════════════════════════════════════
-          Expanded(
-            flex: isWide ? 4 : 1,
-            child: _buildLoginPanel(),
-          ),
-        ],
-      ),
-    );
+            // PANEL DERECHO – Formulario de login
+            Expanded(
+              flex: 4,
+              child: Container(
+                color: FitNetTheme.backgroundDark,
+                child: _buildLoginPanel(isMobile: false),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Scaffold(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildImagePanel(isMobile: true),
+            Center(
+              child: _buildLoginPanel(isMobile: true),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
-  /// Panel izquierdo: imagen de gimnasio con overlay oscuro.
-  Widget _buildImagePanel() {
+  /// Panel izquierdo (o fondo en móvil): imagen de gimnasio con overlay oscuro.
+  Widget _buildImagePanel({required bool isMobile}) {
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -164,15 +176,26 @@ class _LoginScreenState extends State<LoginScreen>
           'assets/images/gym_bg.jpg',
           fit: BoxFit.cover,
         ),
+        if (isMobile)
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 3.0, sigmaY: 3.0),
+            child: Container(color: Colors.transparent),
+          ),
         // Overlay con gradiente para dar profundidad
         Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                Colors.black.withValues(alpha: 0.3),
-                Colors.black.withValues(alpha: 0.1),
-                Colors.black.withValues(alpha: 0.4),
-              ],
+              colors: isMobile 
+                  ? [
+                      Colors.black.withValues(alpha: 0.6),
+                      Colors.black.withValues(alpha: 0.4),
+                      Colors.black.withValues(alpha: 0.7),
+                    ]
+                  : [
+                      Colors.black.withValues(alpha: 0.3),
+                      Colors.black.withValues(alpha: 0.1),
+                      Colors.black.withValues(alpha: 0.4),
+                    ],
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
             ),
@@ -203,37 +226,34 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   /// Panel derecho: formulario de login completo.
-  Widget _buildLoginPanel() {
-    return Container(
-      color: FitNetTheme.backgroundDark,
-      child: FadeTransition(
-        opacity: _fadeAnim,
-        child: SlideTransition(
-          position: _slideAnim,
-          child: Center(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(
-                horizontal: MediaQuery.of(context).size.width < 450 ? 20 : 40,
-                vertical: 24,
-              ),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // ── Logo / Branding ──
-                    _buildLogo(),
-                    const SizedBox(height: 48),
+  Widget _buildLoginPanel({required bool isMobile}) {
+    return FadeTransition(
+      opacity: _fadeAnim,
+      child: SlideTransition(
+        position: _slideAnim,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width < 450 ? 20 : 40,
+              vertical: 24,
+            ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // ── Logo / Branding ──
+                  _buildLogo(),
+                  const SizedBox(height: 48),
 
-                    // ── Formulario de login ──
-                    _buildLoginForm(),
+                  // ── Formulario de login ──
+                  _buildLoginForm(isMobile: isMobile),
 
-                    const SizedBox(height: 28),
+                  const SizedBox(height: 28),
 
-                    // ── Credenciales de demo ──
-                    _buildCredentialsPanel(),
-                  ],
-                ),
+                  // ── Credenciales de demo ──
+                  _buildCredentialsPanel(isMobile: isMobile),
+                ],
               ),
             ),
           ),
@@ -294,14 +314,11 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _buildLoginForm() {
-    return Container(
-      decoration: FitNetTheme.goldAccentCard,
-      padding: const EdgeInsets.all(28),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildLoginForm({required bool isMobile}) {
+    Widget formContent = Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Título
             const Text(
@@ -408,16 +425,39 @@ class _LoginScreenState extends State<LoginScreen>
             ),
           ],
         ),
-      ),
-    );
+      );
+
+    if (isMobile) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.15),
+                width: 1,
+              ),
+            ),
+            padding: const EdgeInsets.all(28),
+            child: formContent,
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        decoration: FitNetTheme.goldAccentCard,
+        padding: const EdgeInsets.all(28),
+        child: formContent,
+      );
+    }
   }
 
-  Widget _buildCredentialsPanel() {
-    return Container(
-      decoration: FitNetTheme.premiumCard,
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildCredentialsPanel({required bool isMobile}) {
+    Widget content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
@@ -447,8 +487,34 @@ class _LoginScreenState extends State<LoginScreen>
           _buildCredentialRow('Cajero Centro', 'cajero_centro / centro123'),
           _buildCredentialRow('Cajero Norte', 'cajero_norte / norte123'),
         ],
-      ),
-    );
+      );
+
+    if (isMobile) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+                width: 1,
+              ),
+            ),
+            padding: const EdgeInsets.all(18),
+            child: content,
+          ),
+        ),
+      );
+    } else {
+      return Container(
+        decoration: FitNetTheme.premiumCard,
+        padding: const EdgeInsets.all(18),
+        child: content,
+      );
+    }
   }
 
   Widget _buildCredentialRow(String role, String credentials) {
