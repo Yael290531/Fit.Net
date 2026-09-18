@@ -1284,10 +1284,12 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
 
   Widget _buildClientesList(List<ClienteConTarjetaYSuscripcion> items) {
     final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
 
     return PremiumCard(
       title: 'Clientes de $_sucursal',
       icon: Icons.people_outline,
+      padding: EdgeInsets.all(isMobile ? 12 : 20),
       child: items.isEmpty
           ? const Center(
               child: Padding(
@@ -1310,6 +1312,8 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                     : '---';
                 final diasRestantes = item.diasRestantes;
                 final tieneSuscripcion = item.tieneSuscripcionActiva;
+                final nombreCliente =
+                    c.nombre.trim().isEmpty ? 'Cliente sin nombre' : c.nombre;
 
                 return Container(
                   key: ValueKey('cliente_${c.id}_${tarjeta?.idTarjeta}'),
@@ -1360,7 +1364,7 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      c.nombre,
+                                      nombreCliente,
                                       style: const TextStyle(
                                         color: FitNetTheme.textPrimary,
                                         fontWeight: FontWeight.w600,
@@ -1370,95 +1374,97 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 2),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'Tarjeta #$tarjetaIdShort',
-                                          style: const TextStyle(
-                                            color: FitNetTheme.textSecondary,
-                                            fontSize: 11,
-                                          ),
-                                        ),
-                                        if (screenWidth > 450) ...[
-                                          const SizedBox(width: 4),
-                                          const Text(
-                                            '· Toca',
-                                            style: TextStyle(
-                                              color: FitNetTheme.gold,
-                                              fontSize: 10,
+                                    Text.rich(
+                                      TextSpan(
+                                        text: 'Tarjeta #$tarjetaIdShort',
+                                        children: [
+                                          if (screenWidth > 450) ...[
+                                            const TextSpan(
+                                              text: ' · Toca',
+                                              style: TextStyle(
+                                                color: FitNetTheme.gold,
+                                                fontSize: 10,
+                                              ),
                                             ),
-                                          ),
+                                          ],
                                         ],
-                                      ],
+                                      ),
+                                      style: const TextStyle(
+                                        color: FitNetTheme.textSecondary,
+                                        fontSize: 11,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
                               ),
                             ),
                           ),
-                          // Acciones de gestión: editar y eliminar
-                          IconButton(
-                            constraints: const BoxConstraints(
-                              minWidth: 30,
-                              minHeight: 30,
-                            ),
-                            padding: EdgeInsets.zero,
-                            icon: const Icon(Icons.edit_outlined, size: 15),
-                            color: FitNetTheme.textSecondary,
-                            tooltip: 'Editar ${c.nombre}',
-                            onPressed: () => _mostrarDialogoEditarCliente(c),
-                          ),
-                          IconButton(
-                            constraints: const BoxConstraints(
-                              minWidth: 30,
-                              minHeight: 30,
-                            ),
-                            padding: EdgeInsets.zero,
-                            icon: const Icon(Icons.delete_outline, size: 15),
-                            color: tieneSuscripcion
-                                ? FitNetTheme.textSecondary.withValues(alpha: 0.3)
-                                : FitNetTheme.error.withValues(alpha: 0.7),
-                            tooltip: tieneSuscripcion
-                                ? 'No se puede eliminar (suscripción activa)'
-                                : 'Eliminar ${c.nombre}',
-                            onPressed: () => _mostrarDialogoEliminarCliente(
-                              c,
-                              tieneSuscripcion,
-                            ),
-                          ),
-                          // Acciones financieras
-                          if (tarjeta != null) ...[
+                          // En desktop: mantener acciones inline en la fila principal
+                          if (!isMobile) ...[
                             IconButton(
                               constraints: const BoxConstraints(
-                                minWidth: 32,
-                                minHeight: 32,
+                                minWidth: 30,
+                                minHeight: 30,
                               ),
                               padding: EdgeInsets.zero,
-                              icon: const Icon(
-                                Icons.add_card_rounded,
-                                size: 17,
-                              ),
-                              color: FitNetTheme.gold,
-                              tooltip: 'Recargar tarjeta de ${c.nombre}',
-                              onPressed: () =>
-                                  _cargarParaRecarga(tarjeta.idTarjeta),
+                              icon: const Icon(Icons.edit_outlined, size: 15),
+                              color: FitNetTheme.textSecondary,
+                              tooltip: 'Editar ${c.nombre}',
+                              onPressed: () => _mostrarDialogoEditarCliente(c),
                             ),
                             IconButton(
                               constraints: const BoxConstraints(
-                                minWidth: 32,
-                                minHeight: 32,
+                                minWidth: 30,
+                                minHeight: 30,
                               ),
                               padding: EdgeInsets.zero,
-                              icon: const Icon(
-                                Icons.card_membership_rounded,
-                                size: 17,
+                              icon: const Icon(Icons.delete_outline, size: 15),
+                              color: tieneSuscripcion
+                                  ? FitNetTheme.textSecondary.withValues(alpha: 0.3)
+                                  : FitNetTheme.error.withValues(alpha: 0.7),
+                              tooltip: tieneSuscripcion
+                                  ? 'No se puede eliminar (suscripción activa)'
+                                  : 'Eliminar ${c.nombre}',
+                              onPressed: () => _mostrarDialogoEliminarCliente(
+                                c,
+                                tieneSuscripcion,
                               ),
-                              color: FitNetTheme.gold.withValues(alpha: 0.8),
-                              tooltip: 'Cobrar suscripción',
-                              onPressed: () =>
-                                  _cargarParaSuscripcion(tarjeta.idTarjeta),
                             ),
-                            const SizedBox(width: 4),
+                            if (tarjeta != null) ...[
+                              IconButton(
+                                constraints: const BoxConstraints(
+                                  minWidth: 32,
+                                  minHeight: 32,
+                                ),
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(
+                                  Icons.add_card_rounded,
+                                  size: 17,
+                                ),
+                                color: FitNetTheme.gold,
+                                tooltip: 'Recargar tarjeta de ${c.nombre}',
+                                onPressed: () =>
+                                    _cargarParaRecarga(tarjeta.idTarjeta),
+                              ),
+                              IconButton(
+                                constraints: const BoxConstraints(
+                                  minWidth: 32,
+                                  minHeight: 32,
+                                ),
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(
+                                  Icons.card_membership_rounded,
+                                  size: 17,
+                                ),
+                                color: FitNetTheme.gold.withValues(alpha: 0.8),
+                                tooltip: 'Cobrar suscripción',
+                                onPressed: () =>
+                                    _cargarParaSuscripcion(tarjeta.idTarjeta),
+                              ),
+                              const SizedBox(width: 4),
+                            ],
                           ],
                           AnimatedContainer(
                             duration: const Duration(milliseconds: 250),
@@ -1486,6 +1492,87 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                               ),
                             ),
                           ),
+                          // En móvil: menú contextual compacto para editar y eliminar
+                          if (isMobile) ...[
+                            PopupMenuButton<String>(
+                              icon: const Icon(
+                                Icons.more_vert,
+                                size: 18,
+                                color: FitNetTheme.textSecondary,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 28,
+                                minHeight: 28,
+                              ),
+                              color: FitNetTheme.cardDark,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                ),
+                              ),
+                              onSelected: (value) {
+                                if (value == 'editar') {
+                                  _mostrarDialogoEditarCliente(c);
+                                } else if (value == 'eliminar') {
+                                  _mostrarDialogoEliminarCliente(
+                                    c,
+                                    tieneSuscripcion,
+                                  );
+                                }
+                              },
+                              itemBuilder: (context) => [
+                                const PopupMenuItem(
+                                  value: 'editar',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.edit_outlined,
+                                        size: 16,
+                                        color: FitNetTheme.textPrimary,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Editar cliente',
+                                        style: TextStyle(
+                                          color: FitNetTheme.textPrimary,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                PopupMenuItem(
+                                  value: 'eliminar',
+                                  enabled: !tieneSuscripcion,
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.delete_outline,
+                                        size: 16,
+                                        color: tieneSuscripcion
+                                            ? FitNetTheme.textSecondary
+                                                .withValues(alpha: 0.4)
+                                            : FitNetTheme.error,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text(
+                                        'Eliminar cliente',
+                                        style: TextStyle(
+                                          color: tieneSuscripcion
+                                              ? FitNetTheme.textSecondary
+                                                  .withValues(alpha: 0.4)
+                                              : FitNetTheme.error,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ],
                       ),
                       // ── Badge de suscripción ──
@@ -1532,11 +1619,92 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
                         ),
                       ),
+                      // ── Botones de acción rápida para móvil (Recargar y Cobrar Suscripción) ──
+                      if (isMobile && tarjeta != null) ...[
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                onTap: () => _cargarParaRecarga(tarjeta.idTarjeta),
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: FitNetTheme.gold.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: FitNetTheme.gold.withValues(alpha: 0.22),
+                                    ),
+                                  ),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.add_card_rounded,
+                                        size: 14,
+                                        color: FitNetTheme.gold,
+                                      ),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'Recargar',
+                                        style: TextStyle(
+                                          color: FitNetTheme.gold,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: InkWell(
+                                onTap: () => _cargarParaSuscripcion(tarjeta.idTarjeta),
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: FitNetTheme.gold.withValues(alpha: 0.05),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: FitNetTheme.gold.withValues(alpha: 0.18),
+                                    ),
+                                  ),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.card_membership_rounded,
+                                        size: 14,
+                                        color: FitNetTheme.gold,
+                                      ),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'Suscripción',
+                                        style: TextStyle(
+                                          color: FitNetTheme.gold,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 );

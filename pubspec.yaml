@@ -58,6 +58,20 @@ dev_dependencies:
   drift_dev: ^2.34.0
   build_runner: ^2.4.0
 
+  # ── Generador de iconos de la aplicación ─────────────────────────────
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: false
+  web:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+  image_path: "assets/icon/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#0A0A0A"
+  adaptive_icon_foreground: "assets/icon/app_icon.png"
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

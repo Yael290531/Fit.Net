@@ -88,8 +88,9 @@ class _AdminDashboardState extends State<AdminDashboard>
             ),
             backgroundColor: FitNetTheme.cardDark,
             behavior: SnackBarBehavior.floating,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -776,7 +777,7 @@ class _AdminDashboardState extends State<AdminDashboard>
           // BD Global
           _buildDbNode(
             'Servidor Central (BD Global)',
-            'Supabase / PostgreSQL (próximamente)',
+            'Supabase / PostgreSQL',
             Icons.dns_rounded,
             isMain: true,
           ),
@@ -860,9 +861,9 @@ class _AdminDashboardState extends State<AdminDashboard>
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Cada sucursal opera con su propia base de datos local (distribución). '
-                    'El servidor central integrará los datos para generar reportes globales (integración) '
-                    'cuando se conecte Supabase.',
+                    'Cada sucursal opera con su propia base de datos local. '
+                    'El servidor central integra los datos para generar reportes globales '
+                    'en cuanto se conecta a Supabase.',
                     style: TextStyle(
                       color: FitNetTheme.textSecondary,
                       fontSize: 12,
@@ -1046,7 +1047,8 @@ class _ClientesGestionSection extends StatefulWidget {
   });
 
   @override
-  State<_ClientesGestionSection> createState() => _ClientesGestionSectionState();
+  State<_ClientesGestionSection> createState() =>
+      _ClientesGestionSectionState();
 }
 
 class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
@@ -1061,14 +1063,26 @@ class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
     _clientesRepo = widget.providers.clientesRepo(widget.sucursal);
   }
 
-  void _showSnackBar(String message, {bool isError = false, bool isSuccess = false}) {
+  void _showSnackBar(
+    String message, {
+    bool isError = false,
+    bool isSuccess = false,
+  }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
             Icon(
-              isError ? Icons.error_outline : isSuccess ? Icons.check_circle_outline : Icons.info_outline,
-              color: isError ? FitNetTheme.error : isSuccess ? FitNetTheme.success : FitNetTheme.gold,
+              isError
+                  ? Icons.error_outline
+                  : isSuccess
+                  ? Icons.check_circle_outline
+                  : Icons.info_outline,
+              color: isError
+                  ? FitNetTheme.error
+                  : isSuccess
+                  ? FitNetTheme.success
+                  : FitNetTheme.gold,
               size: 20,
             ),
             const SizedBox(width: 12),
@@ -1105,7 +1119,11 @@ class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
             const SizedBox(width: 12),
             const Text(
               'Editar Cliente',
-              style: TextStyle(color: FitNetTheme.textPrimary, fontSize: 18, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                color: FitNetTheme.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ],
         ),
@@ -1115,28 +1133,39 @@ class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
             TextFormField(
               controller: nombreCtrl,
               style: const TextStyle(color: FitNetTheme.textPrimary),
-              decoration: const InputDecoration(labelText: 'Nombre Completo', prefixIcon: Icon(Icons.badge_outlined)),
+              decoration: const InputDecoration(
+                labelText: 'Nombre Completo',
+                prefixIcon: Icon(Icons.badge_outlined),
+              ),
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: telefonoCtrl,
               style: const TextStyle(color: FitNetTheme.textPrimary),
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(labelText: 'Teléfono (opcional)', prefixIcon: Icon(Icons.phone_outlined)),
+              decoration: const InputDecoration(
+                labelText: 'Teléfono (opcional)',
+                prefixIcon: Icon(Icons.phone_outlined),
+              ),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar', style: TextStyle(color: FitNetTheme.textSecondary)),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: FitNetTheme.textSecondary),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: FitNetTheme.gold,
               foregroundColor: const Color(0xFF5B4002),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             child: const Text('Guardar'),
           ),
@@ -1148,8 +1177,12 @@ class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
       try {
         await _clientesRepo.editarCliente(
           cliente.id,
-          nombre: nombreCtrl.text.trim().isNotEmpty ? nombreCtrl.text.trim() : null,
-          telefono: telefonoCtrl.text.trim().isNotEmpty ? telefonoCtrl.text.trim() : null,
+          nombre: nombreCtrl.text.trim().isNotEmpty
+              ? nombreCtrl.text.trim()
+              : null,
+          telefono: telefonoCtrl.text.trim().isNotEmpty
+              ? telefonoCtrl.text.trim()
+              : null,
         );
         if (!mounted) return;
         _showSnackBar('✓ Cliente actualizado', isSuccess: true);
@@ -1173,7 +1206,10 @@ class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
       builder: (ctx) => AlertDialog(
         backgroundColor: FitNetTheme.cardDark,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Eliminar Cliente', style: TextStyle(color: FitNetTheme.textPrimary)),
+        title: const Text(
+          'Eliminar Cliente',
+          style: TextStyle(color: FitNetTheme.textPrimary),
+        ),
         content: Text(
           '¿Eliminar a "${cliente.nombre}"? Quedará en espera 20 días.',
           style: const TextStyle(color: FitNetTheme.textSecondary),
@@ -1181,14 +1217,19 @@ class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Cancelar', style: TextStyle(color: FitNetTheme.textSecondary)),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: FitNetTheme.textSecondary),
+            ),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             style: ElevatedButton.styleFrom(
               backgroundColor: FitNetTheme.error,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             child: const Text('Eliminar'),
           ),
@@ -1261,7 +1302,9 @@ class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
                 if (!snapshot.hasData) {
                   return const Padding(
                     padding: EdgeInsets.all(24),
-                    child: Center(child: CircularProgressIndicator(color: FitNetTheme.gold)),
+                    child: Center(
+                      child: CircularProgressIndicator(color: FitNetTheme.gold),
+                    ),
                   );
                 }
 
@@ -1269,7 +1312,10 @@ class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
                 if (items.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.all(24),
-                    child: Text('No hay clientes', style: TextStyle(color: FitNetTheme.textSecondary)),
+                    child: Text(
+                      'No hay clientes',
+                      style: TextStyle(color: FitNetTheme.textSecondary),
+                    ),
                   );
                 }
 
@@ -1288,7 +1334,9 @@ class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
                         decoration: BoxDecoration(
                           color: FitNetTheme.cardLighter,
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.04)),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.04),
+                          ),
                         ),
                         child: Row(
                           children: [
@@ -1308,12 +1356,20 @@ class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
                                   Row(
                                     children: [
                                       Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
                                         decoration: BoxDecoration(
                                           color: tieneSuscripcion
-                                              ? FitNetTheme.success.withValues(alpha: 0.1)
-                                              : FitNetTheme.textSecondary.withValues(alpha: 0.08),
-                                          borderRadius: BorderRadius.circular(6),
+                                              ? FitNetTheme.success.withValues(
+                                                  alpha: 0.1,
+                                                )
+                                              : FitNetTheme.textSecondary
+                                                    .withValues(alpha: 0.08),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
                                         ),
                                         child: Text(
                                           tieneSuscripcion
@@ -1342,7 +1398,10 @@ class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
                               ),
                             ),
                             IconButton(
-                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                              constraints: const BoxConstraints(
+                                minWidth: 30,
+                                minHeight: 30,
+                              ),
                               padding: EdgeInsets.zero,
                               icon: const Icon(Icons.edit_outlined, size: 15),
                               color: FitNetTheme.textSecondary,
@@ -1350,14 +1409,22 @@ class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
                               onPressed: () => _editarCliente(c),
                             ),
                             IconButton(
-                              constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+                              constraints: const BoxConstraints(
+                                minWidth: 30,
+                                minHeight: 30,
+                              ),
                               padding: EdgeInsets.zero,
                               icon: const Icon(Icons.delete_outline, size: 15),
                               color: tieneSuscripcion
-                                  ? FitNetTheme.textSecondary.withValues(alpha: 0.3)
+                                  ? FitNetTheme.textSecondary.withValues(
+                                      alpha: 0.3,
+                                    )
                                   : FitNetTheme.error.withValues(alpha: 0.7),
-                              tooltip: tieneSuscripcion ? 'Suscripción activa' : 'Eliminar',
-                              onPressed: () => _eliminarCliente(c, tieneSuscripcion),
+                              tooltip: tieneSuscripcion
+                                  ? 'Suscripción activa'
+                                  : 'Eliminar',
+                              onPressed: () =>
+                                  _eliminarCliente(c, tieneSuscripcion),
                             ),
                           ],
                         ),
