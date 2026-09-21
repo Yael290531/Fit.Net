@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../app_providers.dart';
 import '../core/database/app_database.dart';
 import '../data/repositories/clientes_repository.dart';
+import '../data/repositories/movimientos_repository.dart';
 import '../data/repositories/suscripciones_repository.dart';
 import '../models/models.dart';
 import '../widgets/theme_widgets.dart';
@@ -117,176 +118,253 @@ class _AdminDashboardState extends State<AdminDashboard>
     final screenWidth = MediaQuery.of(context).size.width;
     final isWide = screenWidth > 900;
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(gradient: FitNetTheme.darkGradient),
-        child: Column(
-          children: [
-            // ── Header ──
-            _buildHeader(),
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        body: Container(
+          decoration: BoxDecoration(gradient: FitNetTheme.darkGradient),
+          child: Column(
+            children: [
+              // ── Header ──
+              _buildHeader(),
 
-            // ── Contenido ──
-            Expanded(
-              child: FutureBuilder<_DashboardData>(
-                future: _loadDashboardData(providers),
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: FitNetTheme.gold),
-                    );
-                  }
+              // ── TabBar ──
+              Container(
+                color: FitNetTheme.surfaceDark,
+                child: const TabBar(
+                  indicatorColor: FitNetTheme.gold,
+                  labelColor: FitNetTheme.gold,
+                  unselectedLabelColor: FitNetTheme.textSecondary,
+                  tabs: [
+                    Tab(icon: Icon(Icons.dashboard_rounded), text: 'Dashboard'),
+                    Tab(icon: Icon(Icons.account_tree_outlined), text: 'Desglose y Clientes'),
+                    Tab(icon: Icon(Icons.history_rounded), text: 'Movimientos'),
+                  ],
+                ),
+              ),
 
-                  final data = snapshot.data!;
+              // ── Contenido ──
+              Expanded(
+                child: FutureBuilder<_DashboardData>(
+                  future: _loadDashboardData(providers),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: FitNetTheme.gold),
+                      );
+                    }
 
-                  return SingleChildScrollView(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isWide ? 48 : 12,
-                      vertical: isWide ? 24 : 16,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    final data = snapshot.data!;
+
+                    return TabBarView(
                       children: [
-                        // ── Indicador de sync ──
-                        _buildSyncIndicator(providers),
-                        const SizedBox(height: 24),
-
-                        // ── Indicador Principal: Ingresos Totales ──
-                        _buildMainIndicator(data.ingresosTotales),
-                        const SizedBox(height: 32),
-
-                        // ── Título de Sección ──
-                        const Row(
-                          children: [
-                            Icon(
-                              Icons.account_tree_outlined,
-                              color: FitNetTheme.gold,
-                              size: 20,
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              'Desglose por Sucursal',
-                              style: TextStyle(
-                                color: FitNetTheme.textPrimary,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.3,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Datos integrados desde las bases de datos distribuidas de cada sucursal',
-                          style: TextStyle(
-                            color: FitNetTheme.textSecondary,
-                            fontSize: 13,
+                        // TAB 1: Dashboard Principal
+                        SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isWide ? 48 : 12,
+                            vertical: isWide ? 24 : 16,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSyncIndicator(providers),
+                              const SizedBox(height: 24),
+                              _buildMainIndicator(data.ingresosTotales),
+                              const SizedBox(height: 24),
+                              _buildGlobalMetrics(data),
+                              const SizedBox(height: 32),
+                              _buildArchitectureDiagram(),
+                              const SizedBox(height: 32),
+                              _buildCreditos(),
+                              const SizedBox(height: 32),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 20),
 
-                        // ── Tarjetas por Sucursal ──
-                        if (isWide)
-                          Row(
+                        // TAB 2: Desglose y Gestión de Clientes
+                        SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isWide ? 48 : 12,
+                            vertical: isWide ? 24 : 16,
+                          ),
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: _sucursales
-                                .map(
-                                  (s) => Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                      ),
-                                      child: _buildSucursalCard(
-                                        s,
-                                        data.ingresosPorSucursal[s] ?? 0,
-                                        data.ingresosTotales,
-                                        data.clientesPorSucursal[s] ?? 0,
-                                        data.movimientosPorSucursal[s] ?? 0,
-                                        data,
-                                      ),
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.account_tree_outlined,
+                                    color: FitNetTheme.gold,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Desglose por Sucursal',
+                                    style: TextStyle(
+                                      color: FitNetTheme.textPrimary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -0.3,
                                     ),
                                   ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              const Text(
+                                'Datos integrados desde las bases de datos distribuidas de cada sucursal',
+                                style: TextStyle(
+                                  color: FitNetTheme.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+
+                              if (isWide)
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: _sucursales
+                                      .map(
+                                        (s) => Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                            ),
+                                            child: _buildSucursalCard(
+                                              s,
+                                              data.ingresosPorSucursal[s] ?? 0,
+                                              data.ingresosTotales,
+                                              data.clientesPorSucursal[s] ?? 0,
+                                              data.movimientosPorSucursal[s] ?? 0,
+                                              data,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
                                 )
-                                .toList(),
-                          )
-                        else
-                          ..._sucursales.map(
-                            (s) => Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: _buildSucursalCard(
-                                s,
-                                data.ingresosPorSucursal[s] ?? 0,
-                                data.ingresosTotales,
-                                data.clientesPorSucursal[s] ?? 0,
-                                data.movimientosPorSucursal[s] ?? 0,
-                                data,
+                              else
+                                ..._sucursales.map(
+                                  (s) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 16),
+                                    child: _buildSucursalCard(
+                                      s,
+                                      data.ingresosPorSucursal[s] ?? 0,
+                                      data.ingresosTotales,
+                                      data.clientesPorSucursal[s] ?? 0,
+                                      data.movimientosPorSucursal[s] ?? 0,
+                                      data,
+                                    ),
+                                  ),
+                                ),
+
+                              const SizedBox(height: 24),
+
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.manage_accounts_outlined,
+                                    color: FitNetTheme.gold,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Gestión de Clientes',
+                                    style: TextStyle(
+                                      color: FitNetTheme.textPrimary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -0.3,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ),
-
-                        const SizedBox(height: 24),
-
-                        // ── Gestión de Clientes por Sucursal ──
-                        const Row(
-                          children: [
-                            Icon(
-                              Icons.manage_accounts_outlined,
-                              color: FitNetTheme.gold,
-                              size: 20,
-                            ),
-                            SizedBox(width: 10),
-                            Text(
-                              'Gestión de Clientes',
-                              style: TextStyle(
-                                color: FitNetTheme.textPrimary,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                letterSpacing: -0.3,
+                              const SizedBox(height: 6),
+                              const Text(
+                                'Administrar suscripciones y datos de clientes por sucursal',
+                                style: TextStyle(
+                                  color: FitNetTheme.textSecondary,
+                                  fontSize: 13,
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        const Text(
-                          'Administrar suscripciones y datos de clientes por sucursal',
-                          style: TextStyle(
-                            color: FitNetTheme.textSecondary,
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
+                              const SizedBox(height: 16),
 
-                        ..._sucursales.map(
-                          (s) => Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: _ClientesGestionSection(
-                              sucursal: s,
-                              providers: providers,
-                            ),
+                              ..._sucursales.map(
+                                (s) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: _ClientesGestionSection(
+                                    sucursal: s,
+                                    providers: providers,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                            ],
                           ),
                         ),
 
-                        const SizedBox(height: 16),
+                        // TAB 3: Historial de Movimientos
+                        SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isWide ? 48 : 12,
+                            vertical: isWide ? 24 : 16,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.history_rounded,
+                                    color: FitNetTheme.gold,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Historial de Movimientos',
+                                    style: TextStyle(
+                                      color: FitNetTheme.textPrimary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -0.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              const Text(
+                                'Auditoría y registro en tiempo real de transacciones por sucursal',
+                                style: TextStyle(
+                                  color: FitNetTheme.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 16),
 
-                        // ── Diagrama de Arquitectura ──
-                        _buildArchitectureDiagram(),
-
-                        const SizedBox(height: 32),
-
-                        // ── Créditos del proyecto ──
-                        _buildCreditos(),
-
-                        const SizedBox(height: 32),
+                              ..._sucursales.map(
+                                (s) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 16),
+                                  child: _MovimientosSucursalSection(
+                                    sucursal: s,
+                                    providers: providers,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                            ],
+                          ),
+                        ),
                       ],
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
+
 
   /// Carga los datos consolidados de todas las sucursales.
   Future<_DashboardData> _loadDashboardData(AppProviders providers) async {
@@ -316,6 +394,10 @@ class _AdminDashboardState extends State<AdminDashboard>
       totalIngresos += ingresos;
     }
 
+    final clientesTotales = clientesPorSuc.values.fold<int>(0, (a, b) => a + b);
+    final suscripcionesTotales = suscripcionesActivasPorSuc.values.fold<int>(0, (a, b) => a + b);
+    final gastosMes = totalIngresos * 0.45; // Simulación de gastos 45% de ingresos
+
     return _DashboardData(
       ingresosTotales: totalIngresos,
       ingresosPorSucursal: ingresosPorSuc,
@@ -323,6 +405,9 @@ class _AdminDashboardState extends State<AdminDashboard>
       movimientosPorSucursal: movimientosPorSuc,
       suscripcionesActivasPorSuc: suscripcionesActivasPorSuc,
       porExpirarPorSuc: porExpirarPorSuc,
+      clientesTotales: clientesTotales,
+      suscripcionesTotales: suscripcionesTotales,
+      gastosPorMes: gastosMes,
     );
   }
 
@@ -537,6 +622,72 @@ class _AdminDashboardState extends State<AdminDashboard>
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildGlobalMetrics(_DashboardData data) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildGlobalMetricCard(
+            Icons.people_alt_rounded,
+            '${data.clientesTotales}',
+            'Usuarios',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildGlobalMetricCard(
+            Icons.card_membership_rounded,
+            '${data.suscripcionesTotales}',
+            'Suscripciones',
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildGlobalMetricCard(
+            Icons.money_off_rounded,
+            '\$${data.gastosPorMes.toStringAsFixed(0)}',
+            'Gastos (Est.)',
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGlobalMetricCard(IconData icon, String value, String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+      decoration: BoxDecoration(
+        color: FitNetTheme.cardDark,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: FitNetTheme.gold, size: 24),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(
+              color: FitNetTheme.textPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: FitNetTheme.textSecondary,
+              fontSize: 11,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
@@ -1023,6 +1174,9 @@ class _DashboardData {
   final Map<String, int> movimientosPorSucursal;
   final Map<String, int> suscripcionesActivasPorSuc;
   final Map<String, int> porExpirarPorSuc;
+  final int clientesTotales;
+  final int suscripcionesTotales;
+  final double gastosPorMes;
 
   _DashboardData({
     required this.ingresosTotales,
@@ -1031,6 +1185,9 @@ class _DashboardData {
     required this.movimientosPorSucursal,
     required this.suscripcionesActivasPorSuc,
     required this.porExpirarPorSuc,
+    required this.clientesTotales,
+    required this.suscripcionesTotales,
+    required this.gastosPorMes,
   });
 }
 
@@ -1439,3 +1596,672 @@ class _ClientesGestionSectionState extends State<_ClientesGestionSection> {
     );
   }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Widget de Historial de Movimientos por Sucursal
+// ═══════════════════════════════════════════════════════════════════════
+class _MovimientosSucursalSection extends StatefulWidget {
+  final String sucursal;
+  final AppProviders providers;
+
+  const _MovimientosSucursalSection({
+    required this.sucursal,
+    required this.providers,
+  });
+
+  @override
+  State<_MovimientosSucursalSection> createState() =>
+      _MovimientosSucursalSectionState();
+}
+
+class _MovimientosSucursalSectionState
+    extends State<_MovimientosSucursalSection> {
+  bool _isExpanded = false;
+  late MovimientosRepository _movimientosRepo;
+
+  String _tipoFiltro = 'todos'; // 'todos', 'pago', 'recarga'
+  String _periodoFiltro = 'todos'; // 'todos', 'hoy'
+  String _searchQuery = '';
+  final TextEditingController _searchCtrl = TextEditingController();
+  int _limiteVisibles = 10;
+
+  @override
+  void initState() {
+    super.initState();
+    _movimientosRepo = widget.providers.movimientosRepo(widget.sucursal);
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final iconData = widget.sucursal.contains('Centro')
+        ? Icons.location_city_rounded
+        : Icons.apartment_rounded;
+
+    return Container(
+      decoration: FitNetTheme.premiumCard,
+      child: Column(
+        children: [
+          // Header expandible
+          InkWell(
+            onTap: () => setState(() => _isExpanded = !_isExpanded),
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: FitNetTheme.gold.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(iconData, color: FitNetTheme.gold, size: 18),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.sucursal,
+                          style: const TextStyle(
+                            color: FitNetTheme.textPrimary,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        const Text(
+                          'Transacciones y auditoría de caja',
+                          style: TextStyle(
+                            color: FitNetTheme.textSecondary,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  StreamBuilder<List<MovimientoConDetalle>>(
+                    stream: _movimientosRepo.watchMovimientosConDetalle(),
+                    builder: (context, snapshot) {
+                      final count = snapshot.data?.length ?? 0;
+                      return Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: FitNetTheme.gold.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: FitNetTheme.gold.withValues(alpha: 0.25),
+                          ),
+                        ),
+                        child: Text(
+                          '$count movs',
+                          style: const TextStyle(
+                            color: FitNetTheme.gold,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    _isExpanded ? Icons.expand_less : Icons.expand_more,
+                    color: FitNetTheme.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Contenido expandible
+          if (_isExpanded)
+            StreamBuilder<List<MovimientoConDetalle>>(
+              stream: _movimientosRepo.watchMovimientosConDetalle(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const Padding(
+                    padding: EdgeInsets.all(28),
+                    child: Center(
+                      child: CircularProgressIndicator(color: FitNetTheme.gold),
+                    ),
+                  );
+                }
+
+                final todos = snapshot.data!;
+                final hoy = DateTime.now();
+
+                // Calcular totales de la sucursal
+                double totalPagos = 0.0;
+                double totalRecargas = 0.0;
+                for (final item in todos) {
+                  if (item.movimiento.tipo == 'pago') {
+                    totalPagos += item.movimiento.monto;
+                  } else if (item.movimiento.tipo == 'recarga') {
+                    totalRecargas += item.movimiento.monto;
+                  }
+                }
+
+                // Filtrar lista
+                final filtrados = todos.where((item) {
+                  final mov = item.movimiento;
+
+                  // Filtro por tipo
+                  if (_tipoFiltro != 'todos' && mov.tipo != _tipoFiltro) {
+                    return false;
+                  }
+
+                  // Filtro por periodo (hoy)
+                  if (_periodoFiltro == 'hoy') {
+                    final f = mov.fecha;
+                    if (f.year != hoy.year ||
+                        f.month != hoy.month ||
+                        f.day != hoy.day) {
+                      return false;
+                    }
+                  }
+
+                  // Filtro por búsqueda de texto
+                  if (_searchQuery.isNotEmpty) {
+                    final q = _searchQuery.toLowerCase();
+                    final nombreCliente =
+                        item.cliente?.nombre.toLowerCase() ?? '';
+                    final tarjetaId = mov.idTarjeta.toLowerCase();
+                    final tipo = mov.tipo.toLowerCase();
+                    if (!nombreCliente.contains(q) &&
+                        !tarjetaId.contains(q) &&
+                        !tipo.contains(q)) {
+                      return false;
+                    }
+                  }
+
+                  return true;
+                }).toList();
+
+                final itemsAMostrar = filtrados.take(_limiteVisibles).toList();
+                final hayMas = filtrados.length > _limiteVisibles;
+
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Divider(color: Colors.white.withValues(alpha: 0.06)),
+                      const SizedBox(height: 12),
+
+                      // ── Resumen de métricas de la sucursal ──
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          _buildMetricaChip(
+                            icon: Icons.receipt_long_rounded,
+                            color: FitNetTheme.gold,
+                            label: 'Total Pagos',
+                            valor: '\$${totalPagos.toStringAsFixed(2)}',
+                          ),
+                          _buildMetricaChip(
+                            icon: Icons.add_circle_outline,
+                            color: FitNetTheme.success,
+                            label: 'Total Recargas',
+                            valor: '\$${totalRecargas.toStringAsFixed(2)}',
+                          ),
+                          _buildMetricaChip(
+                            icon: Icons.swap_vert_rounded,
+                            color: FitNetTheme.textSecondary,
+                            label: 'Operaciones',
+                            valor: '${todos.length}',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // ── Barra de búsqueda y filtros ──
+                      TextField(
+                        controller: _searchCtrl,
+                        onChanged: (val) =>
+                            setState(() => _searchQuery = val.trim()),
+                        style: const TextStyle(
+                          color: FitNetTheme.textPrimary,
+                          fontSize: 13,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'Buscar por cliente, tarjeta o tipo...',
+                          hintStyle: TextStyle(
+                            color: FitNetTheme.textSecondary.withValues(alpha: 0.6),
+                            fontSize: 12,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.search_rounded,
+                            color: FitNetTheme.gold,
+                            size: 18,
+                          ),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  icon: const Icon(
+                                    Icons.clear,
+                                    color: FitNetTheme.textSecondary,
+                                    size: 16,
+                                  ),
+                                  onPressed: () {
+                                    _searchCtrl.clear();
+                                    setState(() => _searchQuery = '');
+                                  },
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: FitNetTheme.cardLighter,
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.06),
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.06),
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: const BorderSide(
+                              color: FitNetTheme.gold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // ── Filtros en chips (Tipo y Periodo) ──
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            // Periodo
+                            _buildFilterChip(
+                              label: 'Todos los días',
+                              selected: _periodoFiltro == 'todos',
+                              onSelected: () =>
+                                  setState(() => _periodoFiltro = 'todos'),
+                            ),
+                            const SizedBox(width: 6),
+                            _buildFilterChip(
+                              label: 'Solo hoy',
+                              selected: _periodoFiltro == 'hoy',
+                              onSelected: () =>
+                                  setState(() => _periodoFiltro = 'hoy'),
+                            ),
+                            const SizedBox(width: 12),
+                            Container(
+                              height: 16,
+                              width: 1,
+                              color: Colors.white.withValues(alpha: 0.1),
+                            ),
+                            const SizedBox(width: 12),
+                            // Tipo
+                            _buildFilterChip(
+                              label: 'Todos',
+                              selected: _tipoFiltro == 'todos',
+                              onSelected: () =>
+                                  setState(() => _tipoFiltro = 'todos'),
+                            ),
+                            const SizedBox(width: 6),
+                            _buildFilterChip(
+                              label: 'Pagos',
+                              selected: _tipoFiltro == 'pago',
+                              color: FitNetTheme.gold,
+                              onSelected: () =>
+                                  setState(() => _tipoFiltro = 'pago'),
+                            ),
+                            const SizedBox(width: 6),
+                            _buildFilterChip(
+                              label: 'Recargas',
+                              selected: _tipoFiltro == 'recarga',
+                              color: FitNetTheme.success,
+                              onSelected: () =>
+                                  setState(() => _tipoFiltro = 'recarga'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // ── Lista de movimientos ──
+                      if (filtrados.isEmpty)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 24),
+                          alignment: Alignment.center,
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.receipt_long_outlined,
+                                color: FitNetTheme.textSecondary
+                                    .withValues(alpha: 0.3),
+                                size: 40,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                todos.isEmpty
+                                    ? 'Sin movimientos registrados en esta sucursal'
+                                    : 'No hay movimientos que coincidan con el filtro',
+                                style: const TextStyle(
+                                  color: FitNetTheme.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else ...[
+                        ...itemsAMostrar.map((item) {
+                          final mov = item.movimiento;
+                          final isRecarga = mov.tipo == 'recarga';
+                          final isPago = mov.tipo == 'pago';
+
+                          final icon = isRecarga
+                              ? Icons.add_circle_outline
+                              : isPago
+                                  ? Icons.receipt_long_rounded
+                                  : Icons.swap_horiz_rounded;
+
+                          final iconColor = isRecarga
+                              ? FitNetTheme.success
+                              : isPago
+                                  ? FitNetTheme.gold
+                                  : FitNetTheme.textSecondary;
+
+                          final tipoLabel = isRecarga
+                              ? 'Recarga'
+                              : isPago
+                                  ? 'Pago'
+                                  : mov.tipo[0].toUpperCase() +
+                                      mov.tipo.substring(1);
+
+                          final clienteNombre =
+                              item.cliente?.nombre ?? 'Cliente no vinculado';
+                          final shortId = mov.idTarjeta.length >= 8
+                              ? mov.idTarjeta.substring(0, 8)
+                              : mov.idTarjeta;
+
+                          final fecha = mov.fecha;
+                          final fechaStr =
+                              '${fecha.day.toString().padLeft(2, '0')}/'
+                              '${fecha.month.toString().padLeft(2, '0')}/'
+                              '${fecha.year} '
+                              '${fecha.hour.toString().padLeft(2, '0')}:'
+                              '${fecha.minute.toString().padLeft(2, '0')}';
+
+                          final isSynced = mov.syncStatus == 'synced';
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: FitNetTheme.cardLighter,
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.04),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: iconColor.withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(icon, color: iconColor, size: 16),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              clienteNombre,
+                                              style: const TextStyle(
+                                                color: FitNetTheme.textPrimary,
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 2,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: iconColor.withValues(
+                                                alpha: 0.1,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              tipoLabel,
+                                              style: TextStyle(
+                                                color: iconColor,
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'Tarjeta #$shortId',
+                                            style: const TextStyle(
+                                              color: FitNetTheme.textSecondary,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                          const Text(
+                                            ' · ',
+                                            style: TextStyle(
+                                              color: FitNetTheme.textSecondary,
+                                            ),
+                                          ),
+                                          Text(
+                                            fechaStr,
+                                            style: const TextStyle(
+                                              color: FitNetTheme.textSecondary,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Icon(
+                                            isSynced
+                                                ? Icons.cloud_done_rounded
+                                                : Icons.cloud_queue_rounded,
+                                            size: 12,
+                                            color: isSynced
+                                                ? FitNetTheme.success
+                                                : FitNetTheme.gold
+                                                    .withValues(alpha: 0.7),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${isRecarga ? '+' : '-'}\$${mov.monto.toStringAsFixed(2)}',
+                                  style: TextStyle(
+                                    color: isRecarga
+                                        ? FitNetTheme.success
+                                        : FitNetTheme.gold,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
+
+                        // Botón mostrar más / mostrar menos
+                        if (hayMas || _limiteVisibles > 10)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                if (hayMas)
+                                  TextButton.icon(
+                                    icon: const Icon(
+                                      Icons.expand_more_rounded,
+                                      size: 16,
+                                      color: FitNetTheme.gold,
+                                    ),
+                                    label: Text(
+                                      'Ver más (${filtrados.length - _limiteVisibles} restantes)',
+                                      style: const TextStyle(
+                                        color: FitNetTheme.gold,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _limiteVisibles += 15;
+                                      });
+                                    },
+                                  ),
+                                if (_limiteVisibles > 10)
+                                  TextButton.icon(
+                                    icon: const Icon(
+                                      Icons.expand_less_rounded,
+                                      size: 16,
+                                      color: FitNetTheme.textSecondary,
+                                    ),
+                                    label: const Text(
+                                      'Ver menos',
+                                      style: TextStyle(
+                                        color: FitNetTheme.textSecondary,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _limiteVisibles = 10;
+                                      });
+                                    },
+                                  ),
+                              ],
+                            ),
+                          ),
+                      ],
+                    ],
+                  ),
+                );
+              },
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricaChip({
+    required IconData icon,
+    required Color color,
+    required String label,
+    required String valor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 14),
+          const SizedBox(width: 6),
+          Text(
+            '$label: ',
+            style: const TextStyle(
+              color: FitNetTheme.textSecondary,
+              fontSize: 11,
+            ),
+          ),
+          Text(
+            valor,
+            style: TextStyle(
+              color: color,
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required bool selected,
+    required VoidCallback onSelected,
+    Color color = FitNetTheme.gold,
+  }) {
+    return InkWell(
+      onTap: onSelected,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: selected ? color.withValues(alpha: 0.15) : FitNetTheme.cardLighter,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selected
+                ? color.withValues(alpha: 0.5)
+                : Colors.white.withValues(alpha: 0.06),
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? color : FitNetTheme.textSecondary,
+            fontSize: 11,
+            fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+}
+

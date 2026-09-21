@@ -99,4 +99,53 @@ class MovimientosRepository {
           ]))
         .watch();
   }
+
+  /// Stream reactivo de movimientos con datos asociados de tarjeta y cliente.
+  Stream<List<MovimientoConDetalle>> watchMovimientosConDetalle() {
+    final query = _db.select(_db.movimientos).join([
+      leftOuterJoin(
+        _db.tarjetas,
+        _db.tarjetas.idTarjeta.equalsExp(_db.movimientos.idTarjeta),
+      ),
+      leftOuterJoin(
+        _db.clientes,
+        _db.clientes.id.equalsExp(_db.tarjetas.clienteId),
+      ),
+    ])
+      ..where(_db.movimientos.sucursalId.equals(sucursalId))
+      ..orderBy([
+        OrderingTerm(
+          expression: _db.movimientos.fecha,
+          mode: OrderingMode.desc,
+        ),
+      ]);
+
+    return query.watch().map((rows) {
+      return rows.map((row) {
+        final mov = row.readTable(_db.movimientos);
+        final tarjeta = row.readTableOrNull(_db.tarjetas);
+        final cliente = row.readTableOrNull(_db.clientes);
+        return MovimientoConDetalle(
+          movimiento: mov,
+          tarjeta: tarjeta,
+          cliente: cliente,
+        );
+      }).toList();
+    });
+  }
 }
+
+/// Estructura combinada: Movimiento + Tarjeta + Cliente.
+/// Usada para auditoría y visualización detallada en los paneles.
+class MovimientoConDetalle {
+  final Movimiento movimiento;
+  final Tarjeta? tarjeta;
+  final Cliente? cliente;
+
+  const MovimientoConDetalle({
+    required this.movimiento,
+    this.tarjeta,
+    this.cliente,
+  });
+}
+
