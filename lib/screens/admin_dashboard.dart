@@ -113,6 +113,55 @@ class _AdminDashboardState extends State<AdminDashboard>
     }
   }
 
+  bool _isSyncing = false;
+
+  Future<void> _syncToSupabase() async {
+    if (_isSyncing) return;
+    setState(() => _isSyncing = true);
+
+    try {
+      final providers = AppProviders.of(context);
+      // 1. Subir cambios locales pendientes
+      await providers.syncService.pushPendingChanges();
+      // 2. Descargar cambios remotos actualizados
+      await providers.syncService.pullRemoteChanges();
+
+      if (mounted) {
+        setState(() {}); // Actualiza vista
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.cloud_done_rounded, color: FitNetTheme.success, size: 18),
+                SizedBox(width: 12),
+                Text('Sincronización completada ✓'),
+              ],
+            ),
+            backgroundColor: FitNetTheme.cardDark,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al sincronizar: $e'),
+            backgroundColor: FitNetTheme.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSyncing = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final providers = AppProviders.of(context);
@@ -554,6 +603,26 @@ class _AdminDashboardState extends State<AdminDashboard>
               ),
             ],
             const SizedBox(width: 8),
+            _isSyncing
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 14),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: FitNetTheme.gold,
+                      ),
+                    ),
+                  )
+                : IconButton(
+                    icon: const Icon(
+                      Icons.cloud_upload_outlined,
+                      color: FitNetTheme.gold,
+                    ),
+                    tooltip: 'Sincronizar a la Nube',
+                    onPressed: _syncToSupabase,
+                  ),
             IconButton(
               icon: const Icon(
                 Icons.refresh_rounded,
@@ -2136,7 +2205,8 @@ class _MovimientosSucursalSectionState
                                         ],
                                       ),
                                       const SizedBox(height: 4),
-                                      Row(
+                                      Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
                                           Text(
                                             'Tarjeta #$shortId',
@@ -2145,29 +2215,28 @@ class _MovimientosSucursalSectionState
                                               fontSize: 11,
                                             ),
                                           ),
-                                          const Text(
-                                            ' · ',
-                                            style: TextStyle(
-                                              color: FitNetTheme.textSecondary,
-                                            ),
-                                          ),
-                                          Text(
-                                            fechaStr,
-                                            style: const TextStyle(
-                                              color: FitNetTheme.textSecondary,
-                                              fontSize: 11,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 6),
-                                          Icon(
-                                            isSynced
-                                                ? Icons.cloud_done_rounded
-                                                : Icons.cloud_queue_rounded,
-                                            size: 12,
-                                            color: isSynced
-                                                ? FitNetTheme.success
-                                                : FitNetTheme.gold
-                                                    .withValues(alpha: 0.7),
+                                          const SizedBox(height: 2),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                fechaStr,
+                                                style: const TextStyle(
+                                                  color: FitNetTheme.textSecondary,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Icon(
+                                                isSynced
+                                                    ? Icons.cloud_done_rounded
+                                                    : Icons.cloud_queue_rounded,
+                                                size: 12,
+                                                color: isSynced
+                                                    ? FitNetTheme.success
+                                                    : FitNetTheme.gold
+                                                        .withValues(alpha: 0.7),
+                                              ),
+                                            ],
                                           ),
                                         ],
                                       ),
