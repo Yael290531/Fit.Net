@@ -7,6 +7,7 @@ import '../data/repositories/suscripciones_repository.dart';
 import '../data/repositories/tarjetas_repository.dart';
 import '../models/models.dart';
 import '../widgets/theme_widgets.dart';
+import 'corte_caja_view.dart';
 import 'login_screen.dart';
 
 /// Dashboard del Cajero – Vista de Distribución Local.
@@ -524,6 +525,12 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
                           const SizedBox(height: 16),
                         ],
                       )
+                    : _selectedTab == 3
+                    // ── Corte de Caja: Arqueo, Cierre y PDF ──
+                    ? CorteCajaView(
+                        usuario: widget.usuario,
+                        sucursal: _sucursal,
+                      )
                     // ── Clientes: sub-tabs + formulario + lista ──
                     : Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -764,6 +771,10 @@ class _CajeroDashboardState extends State<CajeroDashboard> {
       (
         Icons.history_rounded,
         'Historial',
+      ),
+      (
+        Icons.point_of_sale_rounded,
+        'Corte de Caja',
       ),
     ];
 

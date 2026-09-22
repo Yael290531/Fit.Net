@@ -42,6 +42,9 @@ dependencies:
 
   # ── Sincronización remota (Supabase) ──────────────────────────────
   supabase: ^2.4.0             # Cliente Supabase puro (sin dependencias nativas)
+  pdf: ^3.12.0
+  printing: ^5.14.3
+  intl: ^0.20.3
 
 dev_dependencies:
   flutter_test:

@@ -10,6 +10,7 @@ import 'tables/movimientos_table.dart';
 import 'tables/suscripciones_table.dart';
 import 'tables/sync_queue_table.dart';
 import 'tables/app_settings_table.dart';
+import 'tables/cortes_caja_table.dart';
 
 part 'app_database.g.dart';
 
@@ -25,7 +26,7 @@ part 'app_database.g.dart';
 // Para conectar Supabase en el futuro, ver:
 //   lib/core/remote/remote_sync_service.dart
 // ═══════════════════════════════════════════════════════════════════════
-@DriftDatabase(tables: [Clientes, Tarjetas, Movimientos, Suscripciones, SyncQueue, AppSettings])
+@DriftDatabase(tables: [Clientes, Tarjetas, Movimientos, Suscripciones, SyncQueue, AppSettings, CortesCaja])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
@@ -33,7 +34,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -46,6 +47,10 @@ class AppDatabase extends _$AppDatabase {
           if (from < 2) {
             // v2: Agregar tabla de suscripciones.
             await m.createTable(suscripciones);
+          }
+          if (from < 3) {
+            // v3: Agregar tabla de cortes de caja / turnos.
+            await m.createTable(cortesCaja);
           }
         },
         beforeOpen: (details) async {

@@ -8,6 +8,7 @@ import '../data/repositories/settings_repository.dart';
 import '../data/repositories/suscripciones_repository.dart';
 import '../data/repositories/sync_queue_repository.dart';
 import '../data/repositories/tarjetas_repository.dart';
+import '../data/repositories/cortes_repository.dart';
 
 // ═══════════════════════════════════════════════════════════════════════
 // AppProviders – InheritedWidget sencillo para inyección de dependencias.
@@ -61,6 +62,10 @@ class AppProviders extends InheritedWidget {
   /// Crea un [SuscripcionesRepository] filtrado por [sucursalId].
   SuscripcionesRepository suscripcionesRepo(String sucursalId) =>
       SuscripcionesRepository(db, sucursalId: sucursalId);
+
+  /// Crea un [CortesRepository] filtrado por [sucursalId].
+  CortesRepository cortesRepo(String sucursalId) =>
+      CortesRepository(db, sucursalId: sucursalId);
 
   @override
   bool updateShouldNotify(AppProviders oldWidget) =>

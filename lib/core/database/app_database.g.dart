@@ -3273,6 +3273,1197 @@ class AppSettingsCompanion extends UpdateCompanion<AppSetting> {
   }
 }
 
+class $CortesCajaTable extends CortesCaja
+    with TableInfo<$CortesCajaTable, CortesCajaData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CortesCajaTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _sucursalIdMeta = const VerificationMeta(
+    'sucursalId',
+  );
+  @override
+  late final GeneratedColumn<String> sucursalId = GeneratedColumn<String>(
+    'sucursal_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cajeroUsernameMeta = const VerificationMeta(
+    'cajeroUsername',
+  );
+  @override
+  late final GeneratedColumn<String> cajeroUsername = GeneratedColumn<String>(
+    'cajero_username',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _fechaAperturaMeta = const VerificationMeta(
+    'fechaApertura',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fechaApertura =
+      GeneratedColumn<DateTime>(
+        'fecha_apertura',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: true,
+      );
+  static const VerificationMeta _fechaCierreMeta = const VerificationMeta(
+    'fechaCierre',
+  );
+  @override
+  late final GeneratedColumn<DateTime> fechaCierre = GeneratedColumn<DateTime>(
+    'fecha_cierre',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _fondoInicialMeta = const VerificationMeta(
+    'fondoInicial',
+  );
+  @override
+  late final GeneratedColumn<double> fondoInicial = GeneratedColumn<double>(
+    'fondo_inicial',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(2000.0),
+  );
+  static const VerificationMeta _totalVentasMeta = const VerificationMeta(
+    'totalVentas',
+  );
+  @override
+  late final GeneratedColumn<double> totalVentas = GeneratedColumn<double>(
+    'total_ventas',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _totalEsperadoMeta = const VerificationMeta(
+    'totalEsperado',
+  );
+  @override
+  late final GeneratedColumn<double> totalEsperado = GeneratedColumn<double>(
+    'total_esperado',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(2000.0),
+  );
+  static const VerificationMeta _efectivoContadoMeta = const VerificationMeta(
+    'efectivoContado',
+  );
+  @override
+  late final GeneratedColumn<double> efectivoContado = GeneratedColumn<double>(
+    'efectivo_contado',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _diferenciaMeta = const VerificationMeta(
+    'diferencia',
+  );
+  @override
+  late final GeneratedColumn<double> diferencia = GeneratedColumn<double>(
+    'diferencia',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _montoRetiradoMeta = const VerificationMeta(
+    'montoRetirado',
+  );
+  @override
+  late final GeneratedColumn<double> montoRetirado = GeneratedColumn<double>(
+    'monto_retirado',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _fondoSiguienteTurnoMeta =
+      const VerificationMeta('fondoSiguienteTurno');
+  @override
+  late final GeneratedColumn<double> fondoSiguienteTurno =
+      GeneratedColumn<double>(
+        'fondo_siguiente_turno',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(2000.0),
+      );
+  static const VerificationMeta _totalMovimientosMeta = const VerificationMeta(
+    'totalMovimientos',
+  );
+  @override
+  late final GeneratedColumn<int> totalMovimientos = GeneratedColumn<int>(
+    'total_movimientos',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _totalSuscripcionesMeta =
+      const VerificationMeta('totalSuscripciones');
+  @override
+  late final GeneratedColumn<double> totalSuscripciones =
+      GeneratedColumn<double>(
+        'total_suscripciones',
+        aliasedName,
+        false,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+        defaultValue: const Constant(0.0),
+      );
+  static const VerificationMeta _totalRecargasMeta = const VerificationMeta(
+    'totalRecargas',
+  );
+  @override
+  late final GeneratedColumn<double> totalRecargas = GeneratedColumn<double>(
+    'total_recargas',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0.0),
+  );
+  static const VerificationMeta _desgloseJsonMeta = const VerificationMeta(
+    'desgloseJson',
+  );
+  @override
+  late final GeneratedColumn<String> desgloseJson = GeneratedColumn<String>(
+    'desglose_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _observacionesMeta = const VerificationMeta(
+    'observaciones',
+  );
+  @override
+  late final GeneratedColumn<String> observaciones = GeneratedColumn<String>(
+    'observaciones',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _estadoMeta = const VerificationMeta('estado');
+  @override
+  late final GeneratedColumn<String> estado = GeneratedColumn<String>(
+    'estado',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('abierto'),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    sucursalId,
+    cajeroUsername,
+    fechaApertura,
+    fechaCierre,
+    fondoInicial,
+    totalVentas,
+    totalEsperado,
+    efectivoContado,
+    diferencia,
+    montoRetirado,
+    fondoSiguienteTurno,
+    totalMovimientos,
+    totalSuscripciones,
+    totalRecargas,
+    desgloseJson,
+    observaciones,
+    estado,
+    createdAt,
+    updatedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cortes_caja';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CortesCajaData> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('sucursal_id')) {
+      context.handle(
+        _sucursalIdMeta,
+        sucursalId.isAcceptableOrUnknown(data['sucursal_id']!, _sucursalIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_sucursalIdMeta);
+    }
+    if (data.containsKey('cajero_username')) {
+      context.handle(
+        _cajeroUsernameMeta,
+        cajeroUsername.isAcceptableOrUnknown(
+          data['cajero_username']!,
+          _cajeroUsernameMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_cajeroUsernameMeta);
+    }
+    if (data.containsKey('fecha_apertura')) {
+      context.handle(
+        _fechaAperturaMeta,
+        fechaApertura.isAcceptableOrUnknown(
+          data['fecha_apertura']!,
+          _fechaAperturaMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_fechaAperturaMeta);
+    }
+    if (data.containsKey('fecha_cierre')) {
+      context.handle(
+        _fechaCierreMeta,
+        fechaCierre.isAcceptableOrUnknown(
+          data['fecha_cierre']!,
+          _fechaCierreMeta,
+        ),
+      );
+    }
+    if (data.containsKey('fondo_inicial')) {
+      context.handle(
+        _fondoInicialMeta,
+        fondoInicial.isAcceptableOrUnknown(
+          data['fondo_inicial']!,
+          _fondoInicialMeta,
+        ),
+      );
+    }
+    if (data.containsKey('total_ventas')) {
+      context.handle(
+        _totalVentasMeta,
+        totalVentas.isAcceptableOrUnknown(
+          data['total_ventas']!,
+          _totalVentasMeta,
+        ),
+      );
+    }
+    if (data.containsKey('total_esperado')) {
+      context.handle(
+        _totalEsperadoMeta,
+        totalEsperado.isAcceptableOrUnknown(
+          data['total_esperado']!,
+          _totalEsperadoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('efectivo_contado')) {
+      context.handle(
+        _efectivoContadoMeta,
+        efectivoContado.isAcceptableOrUnknown(
+          data['efectivo_contado']!,
+          _efectivoContadoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('diferencia')) {
+      context.handle(
+        _diferenciaMeta,
+        diferencia.isAcceptableOrUnknown(data['diferencia']!, _diferenciaMeta),
+      );
+    }
+    if (data.containsKey('monto_retirado')) {
+      context.handle(
+        _montoRetiradoMeta,
+        montoRetirado.isAcceptableOrUnknown(
+          data['monto_retirado']!,
+          _montoRetiradoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('fondo_siguiente_turno')) {
+      context.handle(
+        _fondoSiguienteTurnoMeta,
+        fondoSiguienteTurno.isAcceptableOrUnknown(
+          data['fondo_siguiente_turno']!,
+          _fondoSiguienteTurnoMeta,
+        ),
+      );
+    }
+    if (data.containsKey('total_movimientos')) {
+      context.handle(
+        _totalMovimientosMeta,
+        totalMovimientos.isAcceptableOrUnknown(
+          data['total_movimientos']!,
+          _totalMovimientosMeta,
+        ),
+      );
+    }
+    if (data.containsKey('total_suscripciones')) {
+      context.handle(
+        _totalSuscripcionesMeta,
+        totalSuscripciones.isAcceptableOrUnknown(
+          data['total_suscripciones']!,
+          _totalSuscripcionesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('total_recargas')) {
+      context.handle(
+        _totalRecargasMeta,
+        totalRecargas.isAcceptableOrUnknown(
+          data['total_recargas']!,
+          _totalRecargasMeta,
+        ),
+      );
+    }
+    if (data.containsKey('desglose_json')) {
+      context.handle(
+        _desgloseJsonMeta,
+        desgloseJson.isAcceptableOrUnknown(
+          data['desglose_json']!,
+          _desgloseJsonMeta,
+        ),
+      );
+    }
+    if (data.containsKey('observaciones')) {
+      context.handle(
+        _observacionesMeta,
+        observaciones.isAcceptableOrUnknown(
+          data['observaciones']!,
+          _observacionesMeta,
+        ),
+      );
+    }
+    if (data.containsKey('estado')) {
+      context.handle(
+        _estadoMeta,
+        estado.isAcceptableOrUnknown(data['estado']!, _estadoMeta),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CortesCajaData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CortesCajaData(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      sucursalId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sucursal_id'],
+      )!,
+      cajeroUsername: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cajero_username'],
+      )!,
+      fechaApertura: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_apertura'],
+      )!,
+      fechaCierre: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}fecha_cierre'],
+      ),
+      fondoInicial: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}fondo_inicial'],
+      )!,
+      totalVentas: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}total_ventas'],
+      )!,
+      totalEsperado: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}total_esperado'],
+      )!,
+      efectivoContado: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}efectivo_contado'],
+      ),
+      diferencia: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}diferencia'],
+      )!,
+      montoRetirado: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}monto_retirado'],
+      )!,
+      fondoSiguienteTurno: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}fondo_siguiente_turno'],
+      )!,
+      totalMovimientos: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}total_movimientos'],
+      )!,
+      totalSuscripciones: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}total_suscripciones'],
+      )!,
+      totalRecargas: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}total_recargas'],
+      )!,
+      desgloseJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}desglose_json'],
+      ),
+      observaciones: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}observaciones'],
+      ),
+      estado: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}estado'],
+      )!,
+      createdAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}created_at'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CortesCajaTable createAlias(String alias) {
+    return $CortesCajaTable(attachedDatabase, alias);
+  }
+}
+
+class CortesCajaData extends DataClass implements Insertable<CortesCajaData> {
+  /// UUID del corte / turno (PK).
+  final String id;
+
+  /// Sucursal a la que pertenece el turno.
+  final String sucursalId;
+
+  /// Nombre de usuario del cajero responsable.
+  final String cajeroUsername;
+
+  /// Fecha y hora en que se abrió el turno.
+  final DateTime fechaApertura;
+
+  /// Fecha y hora en que se realizó el corte (null si el turno está abierto).
+  final DateTime? fechaCierre;
+
+  /// Fondo de caja al abrir el turno (por defecto $2,000.00).
+  final double fondoInicial;
+
+  /// Suma total de ventas generadas durante el turno.
+  final double totalVentas;
+
+  /// Total de efectivo esperado en caja = fondoInicial + ventas en efectivo.
+  final double totalEsperado;
+
+  /// Efectivo físico contado por el cajero al hacer el arqueo.
+  final double? efectivoContado;
+
+  /// Diferencia: efectivoContado - totalEsperado (0 = exacto, + sobrante, - faltante).
+  final double diferencia;
+
+  /// Monto de venta que se retira de caja ("se quita la venta").
+  final double montoRetirado;
+
+  /// Fondo que queda en caja para el siguiente turno ($2,000.00).
+  final double fondoSiguienteTurno;
+
+  /// Cantidad de transacciones/movimientos realizados en el turno.
+  final int totalMovimientos;
+
+  /// Total recaudado por cobro de suscripciones.
+  final double totalSuscripciones;
+
+  /// Total recaudado por recargas de tarjeta.
+  final double totalRecargas;
+
+  /// Desglose en formato JSON de las denominaciones de billetes y monedas contadas.
+  final String? desgloseJson;
+
+  /// Observaciones o notas del cajero.
+  final String? observaciones;
+
+  /// Estado del turno: 'abierto' o 'cerrado'.
+  final String estado;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  const CortesCajaData({
+    required this.id,
+    required this.sucursalId,
+    required this.cajeroUsername,
+    required this.fechaApertura,
+    this.fechaCierre,
+    required this.fondoInicial,
+    required this.totalVentas,
+    required this.totalEsperado,
+    this.efectivoContado,
+    required this.diferencia,
+    required this.montoRetirado,
+    required this.fondoSiguienteTurno,
+    required this.totalMovimientos,
+    required this.totalSuscripciones,
+    required this.totalRecargas,
+    this.desgloseJson,
+    this.observaciones,
+    required this.estado,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['sucursal_id'] = Variable<String>(sucursalId);
+    map['cajero_username'] = Variable<String>(cajeroUsername);
+    map['fecha_apertura'] = Variable<DateTime>(fechaApertura);
+    if (!nullToAbsent || fechaCierre != null) {
+      map['fecha_cierre'] = Variable<DateTime>(fechaCierre);
+    }
+    map['fondo_inicial'] = Variable<double>(fondoInicial);
+    map['total_ventas'] = Variable<double>(totalVentas);
+    map['total_esperado'] = Variable<double>(totalEsperado);
+    if (!nullToAbsent || efectivoContado != null) {
+      map['efectivo_contado'] = Variable<double>(efectivoContado);
+    }
+    map['diferencia'] = Variable<double>(diferencia);
+    map['monto_retirado'] = Variable<double>(montoRetirado);
+    map['fondo_siguiente_turno'] = Variable<double>(fondoSiguienteTurno);
+    map['total_movimientos'] = Variable<int>(totalMovimientos);
+    map['total_suscripciones'] = Variable<double>(totalSuscripciones);
+    map['total_recargas'] = Variable<double>(totalRecargas);
+    if (!nullToAbsent || desgloseJson != null) {
+      map['desglose_json'] = Variable<String>(desgloseJson);
+    }
+    if (!nullToAbsent || observaciones != null) {
+      map['observaciones'] = Variable<String>(observaciones);
+    }
+    map['estado'] = Variable<String>(estado);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  CortesCajaCompanion toCompanion(bool nullToAbsent) {
+    return CortesCajaCompanion(
+      id: Value(id),
+      sucursalId: Value(sucursalId),
+      cajeroUsername: Value(cajeroUsername),
+      fechaApertura: Value(fechaApertura),
+      fechaCierre: fechaCierre == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fechaCierre),
+      fondoInicial: Value(fondoInicial),
+      totalVentas: Value(totalVentas),
+      totalEsperado: Value(totalEsperado),
+      efectivoContado: efectivoContado == null && nullToAbsent
+          ? const Value.absent()
+          : Value(efectivoContado),
+      diferencia: Value(diferencia),
+      montoRetirado: Value(montoRetirado),
+      fondoSiguienteTurno: Value(fondoSiguienteTurno),
+      totalMovimientos: Value(totalMovimientos),
+      totalSuscripciones: Value(totalSuscripciones),
+      totalRecargas: Value(totalRecargas),
+      desgloseJson: desgloseJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(desgloseJson),
+      observaciones: observaciones == null && nullToAbsent
+          ? const Value.absent()
+          : Value(observaciones),
+      estado: Value(estado),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory CortesCajaData.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CortesCajaData(
+      id: serializer.fromJson<String>(json['id']),
+      sucursalId: serializer.fromJson<String>(json['sucursalId']),
+      cajeroUsername: serializer.fromJson<String>(json['cajeroUsername']),
+      fechaApertura: serializer.fromJson<DateTime>(json['fechaApertura']),
+      fechaCierre: serializer.fromJson<DateTime?>(json['fechaCierre']),
+      fondoInicial: serializer.fromJson<double>(json['fondoInicial']),
+      totalVentas: serializer.fromJson<double>(json['totalVentas']),
+      totalEsperado: serializer.fromJson<double>(json['totalEsperado']),
+      efectivoContado: serializer.fromJson<double?>(json['efectivoContado']),
+      diferencia: serializer.fromJson<double>(json['diferencia']),
+      montoRetirado: serializer.fromJson<double>(json['montoRetirado']),
+      fondoSiguienteTurno: serializer.fromJson<double>(
+        json['fondoSiguienteTurno'],
+      ),
+      totalMovimientos: serializer.fromJson<int>(json['totalMovimientos']),
+      totalSuscripciones: serializer.fromJson<double>(
+        json['totalSuscripciones'],
+      ),
+      totalRecargas: serializer.fromJson<double>(json['totalRecargas']),
+      desgloseJson: serializer.fromJson<String?>(json['desgloseJson']),
+      observaciones: serializer.fromJson<String?>(json['observaciones']),
+      estado: serializer.fromJson<String>(json['estado']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'sucursalId': serializer.toJson<String>(sucursalId),
+      'cajeroUsername': serializer.toJson<String>(cajeroUsername),
+      'fechaApertura': serializer.toJson<DateTime>(fechaApertura),
+      'fechaCierre': serializer.toJson<DateTime?>(fechaCierre),
+      'fondoInicial': serializer.toJson<double>(fondoInicial),
+      'totalVentas': serializer.toJson<double>(totalVentas),
+      'totalEsperado': serializer.toJson<double>(totalEsperado),
+      'efectivoContado': serializer.toJson<double?>(efectivoContado),
+      'diferencia': serializer.toJson<double>(diferencia),
+      'montoRetirado': serializer.toJson<double>(montoRetirado),
+      'fondoSiguienteTurno': serializer.toJson<double>(fondoSiguienteTurno),
+      'totalMovimientos': serializer.toJson<int>(totalMovimientos),
+      'totalSuscripciones': serializer.toJson<double>(totalSuscripciones),
+      'totalRecargas': serializer.toJson<double>(totalRecargas),
+      'desgloseJson': serializer.toJson<String?>(desgloseJson),
+      'observaciones': serializer.toJson<String?>(observaciones),
+      'estado': serializer.toJson<String>(estado),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  CortesCajaData copyWith({
+    String? id,
+    String? sucursalId,
+    String? cajeroUsername,
+    DateTime? fechaApertura,
+    Value<DateTime?> fechaCierre = const Value.absent(),
+    double? fondoInicial,
+    double? totalVentas,
+    double? totalEsperado,
+    Value<double?> efectivoContado = const Value.absent(),
+    double? diferencia,
+    double? montoRetirado,
+    double? fondoSiguienteTurno,
+    int? totalMovimientos,
+    double? totalSuscripciones,
+    double? totalRecargas,
+    Value<String?> desgloseJson = const Value.absent(),
+    Value<String?> observaciones = const Value.absent(),
+    String? estado,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) => CortesCajaData(
+    id: id ?? this.id,
+    sucursalId: sucursalId ?? this.sucursalId,
+    cajeroUsername: cajeroUsername ?? this.cajeroUsername,
+    fechaApertura: fechaApertura ?? this.fechaApertura,
+    fechaCierre: fechaCierre.present ? fechaCierre.value : this.fechaCierre,
+    fondoInicial: fondoInicial ?? this.fondoInicial,
+    totalVentas: totalVentas ?? this.totalVentas,
+    totalEsperado: totalEsperado ?? this.totalEsperado,
+    efectivoContado: efectivoContado.present
+        ? efectivoContado.value
+        : this.efectivoContado,
+    diferencia: diferencia ?? this.diferencia,
+    montoRetirado: montoRetirado ?? this.montoRetirado,
+    fondoSiguienteTurno: fondoSiguienteTurno ?? this.fondoSiguienteTurno,
+    totalMovimientos: totalMovimientos ?? this.totalMovimientos,
+    totalSuscripciones: totalSuscripciones ?? this.totalSuscripciones,
+    totalRecargas: totalRecargas ?? this.totalRecargas,
+    desgloseJson: desgloseJson.present ? desgloseJson.value : this.desgloseJson,
+    observaciones: observaciones.present
+        ? observaciones.value
+        : this.observaciones,
+    estado: estado ?? this.estado,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  CortesCajaData copyWithCompanion(CortesCajaCompanion data) {
+    return CortesCajaData(
+      id: data.id.present ? data.id.value : this.id,
+      sucursalId: data.sucursalId.present
+          ? data.sucursalId.value
+          : this.sucursalId,
+      cajeroUsername: data.cajeroUsername.present
+          ? data.cajeroUsername.value
+          : this.cajeroUsername,
+      fechaApertura: data.fechaApertura.present
+          ? data.fechaApertura.value
+          : this.fechaApertura,
+      fechaCierre: data.fechaCierre.present
+          ? data.fechaCierre.value
+          : this.fechaCierre,
+      fondoInicial: data.fondoInicial.present
+          ? data.fondoInicial.value
+          : this.fondoInicial,
+      totalVentas: data.totalVentas.present
+          ? data.totalVentas.value
+          : this.totalVentas,
+      totalEsperado: data.totalEsperado.present
+          ? data.totalEsperado.value
+          : this.totalEsperado,
+      efectivoContado: data.efectivoContado.present
+          ? data.efectivoContado.value
+          : this.efectivoContado,
+      diferencia: data.diferencia.present
+          ? data.diferencia.value
+          : this.diferencia,
+      montoRetirado: data.montoRetirado.present
+          ? data.montoRetirado.value
+          : this.montoRetirado,
+      fondoSiguienteTurno: data.fondoSiguienteTurno.present
+          ? data.fondoSiguienteTurno.value
+          : this.fondoSiguienteTurno,
+      totalMovimientos: data.totalMovimientos.present
+          ? data.totalMovimientos.value
+          : this.totalMovimientos,
+      totalSuscripciones: data.totalSuscripciones.present
+          ? data.totalSuscripciones.value
+          : this.totalSuscripciones,
+      totalRecargas: data.totalRecargas.present
+          ? data.totalRecargas.value
+          : this.totalRecargas,
+      desgloseJson: data.desgloseJson.present
+          ? data.desgloseJson.value
+          : this.desgloseJson,
+      observaciones: data.observaciones.present
+          ? data.observaciones.value
+          : this.observaciones,
+      estado: data.estado.present ? data.estado.value : this.estado,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CortesCajaData(')
+          ..write('id: $id, ')
+          ..write('sucursalId: $sucursalId, ')
+          ..write('cajeroUsername: $cajeroUsername, ')
+          ..write('fechaApertura: $fechaApertura, ')
+          ..write('fechaCierre: $fechaCierre, ')
+          ..write('fondoInicial: $fondoInicial, ')
+          ..write('totalVentas: $totalVentas, ')
+          ..write('totalEsperado: $totalEsperado, ')
+          ..write('efectivoContado: $efectivoContado, ')
+          ..write('diferencia: $diferencia, ')
+          ..write('montoRetirado: $montoRetirado, ')
+          ..write('fondoSiguienteTurno: $fondoSiguienteTurno, ')
+          ..write('totalMovimientos: $totalMovimientos, ')
+          ..write('totalSuscripciones: $totalSuscripciones, ')
+          ..write('totalRecargas: $totalRecargas, ')
+          ..write('desgloseJson: $desgloseJson, ')
+          ..write('observaciones: $observaciones, ')
+          ..write('estado: $estado, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    sucursalId,
+    cajeroUsername,
+    fechaApertura,
+    fechaCierre,
+    fondoInicial,
+    totalVentas,
+    totalEsperado,
+    efectivoContado,
+    diferencia,
+    montoRetirado,
+    fondoSiguienteTurno,
+    totalMovimientos,
+    totalSuscripciones,
+    totalRecargas,
+    desgloseJson,
+    observaciones,
+    estado,
+    createdAt,
+    updatedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CortesCajaData &&
+          other.id == this.id &&
+          other.sucursalId == this.sucursalId &&
+          other.cajeroUsername == this.cajeroUsername &&
+          other.fechaApertura == this.fechaApertura &&
+          other.fechaCierre == this.fechaCierre &&
+          other.fondoInicial == this.fondoInicial &&
+          other.totalVentas == this.totalVentas &&
+          other.totalEsperado == this.totalEsperado &&
+          other.efectivoContado == this.efectivoContado &&
+          other.diferencia == this.diferencia &&
+          other.montoRetirado == this.montoRetirado &&
+          other.fondoSiguienteTurno == this.fondoSiguienteTurno &&
+          other.totalMovimientos == this.totalMovimientos &&
+          other.totalSuscripciones == this.totalSuscripciones &&
+          other.totalRecargas == this.totalRecargas &&
+          other.desgloseJson == this.desgloseJson &&
+          other.observaciones == this.observaciones &&
+          other.estado == this.estado &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt);
+}
+
+class CortesCajaCompanion extends UpdateCompanion<CortesCajaData> {
+  final Value<String> id;
+  final Value<String> sucursalId;
+  final Value<String> cajeroUsername;
+  final Value<DateTime> fechaApertura;
+  final Value<DateTime?> fechaCierre;
+  final Value<double> fondoInicial;
+  final Value<double> totalVentas;
+  final Value<double> totalEsperado;
+  final Value<double?> efectivoContado;
+  final Value<double> diferencia;
+  final Value<double> montoRetirado;
+  final Value<double> fondoSiguienteTurno;
+  final Value<int> totalMovimientos;
+  final Value<double> totalSuscripciones;
+  final Value<double> totalRecargas;
+  final Value<String?> desgloseJson;
+  final Value<String?> observaciones;
+  final Value<String> estado;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const CortesCajaCompanion({
+    this.id = const Value.absent(),
+    this.sucursalId = const Value.absent(),
+    this.cajeroUsername = const Value.absent(),
+    this.fechaApertura = const Value.absent(),
+    this.fechaCierre = const Value.absent(),
+    this.fondoInicial = const Value.absent(),
+    this.totalVentas = const Value.absent(),
+    this.totalEsperado = const Value.absent(),
+    this.efectivoContado = const Value.absent(),
+    this.diferencia = const Value.absent(),
+    this.montoRetirado = const Value.absent(),
+    this.fondoSiguienteTurno = const Value.absent(),
+    this.totalMovimientos = const Value.absent(),
+    this.totalSuscripciones = const Value.absent(),
+    this.totalRecargas = const Value.absent(),
+    this.desgloseJson = const Value.absent(),
+    this.observaciones = const Value.absent(),
+    this.estado = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CortesCajaCompanion.insert({
+    required String id,
+    required String sucursalId,
+    required String cajeroUsername,
+    required DateTime fechaApertura,
+    this.fechaCierre = const Value.absent(),
+    this.fondoInicial = const Value.absent(),
+    this.totalVentas = const Value.absent(),
+    this.totalEsperado = const Value.absent(),
+    this.efectivoContado = const Value.absent(),
+    this.diferencia = const Value.absent(),
+    this.montoRetirado = const Value.absent(),
+    this.fondoSiguienteTurno = const Value.absent(),
+    this.totalMovimientos = const Value.absent(),
+    this.totalSuscripciones = const Value.absent(),
+    this.totalRecargas = const Value.absent(),
+    this.desgloseJson = const Value.absent(),
+    this.observaciones = const Value.absent(),
+    this.estado = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       sucursalId = Value(sucursalId),
+       cajeroUsername = Value(cajeroUsername),
+       fechaApertura = Value(fechaApertura),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt);
+  static Insertable<CortesCajaData> custom({
+    Expression<String>? id,
+    Expression<String>? sucursalId,
+    Expression<String>? cajeroUsername,
+    Expression<DateTime>? fechaApertura,
+    Expression<DateTime>? fechaCierre,
+    Expression<double>? fondoInicial,
+    Expression<double>? totalVentas,
+    Expression<double>? totalEsperado,
+    Expression<double>? efectivoContado,
+    Expression<double>? diferencia,
+    Expression<double>? montoRetirado,
+    Expression<double>? fondoSiguienteTurno,
+    Expression<int>? totalMovimientos,
+    Expression<double>? totalSuscripciones,
+    Expression<double>? totalRecargas,
+    Expression<String>? desgloseJson,
+    Expression<String>? observaciones,
+    Expression<String>? estado,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (sucursalId != null) 'sucursal_id': sucursalId,
+      if (cajeroUsername != null) 'cajero_username': cajeroUsername,
+      if (fechaApertura != null) 'fecha_apertura': fechaApertura,
+      if (fechaCierre != null) 'fecha_cierre': fechaCierre,
+      if (fondoInicial != null) 'fondo_inicial': fondoInicial,
+      if (totalVentas != null) 'total_ventas': totalVentas,
+      if (totalEsperado != null) 'total_esperado': totalEsperado,
+      if (efectivoContado != null) 'efectivo_contado': efectivoContado,
+      if (diferencia != null) 'diferencia': diferencia,
+      if (montoRetirado != null) 'monto_retirado': montoRetirado,
+      if (fondoSiguienteTurno != null)
+        'fondo_siguiente_turno': fondoSiguienteTurno,
+      if (totalMovimientos != null) 'total_movimientos': totalMovimientos,
+      if (totalSuscripciones != null) 'total_suscripciones': totalSuscripciones,
+      if (totalRecargas != null) 'total_recargas': totalRecargas,
+      if (desgloseJson != null) 'desglose_json': desgloseJson,
+      if (observaciones != null) 'observaciones': observaciones,
+      if (estado != null) 'estado': estado,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CortesCajaCompanion copyWith({
+    Value<String>? id,
+    Value<String>? sucursalId,
+    Value<String>? cajeroUsername,
+    Value<DateTime>? fechaApertura,
+    Value<DateTime?>? fechaCierre,
+    Value<double>? fondoInicial,
+    Value<double>? totalVentas,
+    Value<double>? totalEsperado,
+    Value<double?>? efectivoContado,
+    Value<double>? diferencia,
+    Value<double>? montoRetirado,
+    Value<double>? fondoSiguienteTurno,
+    Value<int>? totalMovimientos,
+    Value<double>? totalSuscripciones,
+    Value<double>? totalRecargas,
+    Value<String?>? desgloseJson,
+    Value<String?>? observaciones,
+    Value<String>? estado,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return CortesCajaCompanion(
+      id: id ?? this.id,
+      sucursalId: sucursalId ?? this.sucursalId,
+      cajeroUsername: cajeroUsername ?? this.cajeroUsername,
+      fechaApertura: fechaApertura ?? this.fechaApertura,
+      fechaCierre: fechaCierre ?? this.fechaCierre,
+      fondoInicial: fondoInicial ?? this.fondoInicial,
+      totalVentas: totalVentas ?? this.totalVentas,
+      totalEsperado: totalEsperado ?? this.totalEsperado,
+      efectivoContado: efectivoContado ?? this.efectivoContado,
+      diferencia: diferencia ?? this.diferencia,
+      montoRetirado: montoRetirado ?? this.montoRetirado,
+      fondoSiguienteTurno: fondoSiguienteTurno ?? this.fondoSiguienteTurno,
+      totalMovimientos: totalMovimientos ?? this.totalMovimientos,
+      totalSuscripciones: totalSuscripciones ?? this.totalSuscripciones,
+      totalRecargas: totalRecargas ?? this.totalRecargas,
+      desgloseJson: desgloseJson ?? this.desgloseJson,
+      observaciones: observaciones ?? this.observaciones,
+      estado: estado ?? this.estado,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (sucursalId.present) {
+      map['sucursal_id'] = Variable<String>(sucursalId.value);
+    }
+    if (cajeroUsername.present) {
+      map['cajero_username'] = Variable<String>(cajeroUsername.value);
+    }
+    if (fechaApertura.present) {
+      map['fecha_apertura'] = Variable<DateTime>(fechaApertura.value);
+    }
+    if (fechaCierre.present) {
+      map['fecha_cierre'] = Variable<DateTime>(fechaCierre.value);
+    }
+    if (fondoInicial.present) {
+      map['fondo_inicial'] = Variable<double>(fondoInicial.value);
+    }
+    if (totalVentas.present) {
+      map['total_ventas'] = Variable<double>(totalVentas.value);
+    }
+    if (totalEsperado.present) {
+      map['total_esperado'] = Variable<double>(totalEsperado.value);
+    }
+    if (efectivoContado.present) {
+      map['efectivo_contado'] = Variable<double>(efectivoContado.value);
+    }
+    if (diferencia.present) {
+      map['diferencia'] = Variable<double>(diferencia.value);
+    }
+    if (montoRetirado.present) {
+      map['monto_retirado'] = Variable<double>(montoRetirado.value);
+    }
+    if (fondoSiguienteTurno.present) {
+      map['fondo_siguiente_turno'] = Variable<double>(
+        fondoSiguienteTurno.value,
+      );
+    }
+    if (totalMovimientos.present) {
+      map['total_movimientos'] = Variable<int>(totalMovimientos.value);
+    }
+    if (totalSuscripciones.present) {
+      map['total_suscripciones'] = Variable<double>(totalSuscripciones.value);
+    }
+    if (totalRecargas.present) {
+      map['total_recargas'] = Variable<double>(totalRecargas.value);
+    }
+    if (desgloseJson.present) {
+      map['desglose_json'] = Variable<String>(desgloseJson.value);
+    }
+    if (observaciones.present) {
+      map['observaciones'] = Variable<String>(observaciones.value);
+    }
+    if (estado.present) {
+      map['estado'] = Variable<String>(estado.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CortesCajaCompanion(')
+          ..write('id: $id, ')
+          ..write('sucursalId: $sucursalId, ')
+          ..write('cajeroUsername: $cajeroUsername, ')
+          ..write('fechaApertura: $fechaApertura, ')
+          ..write('fechaCierre: $fechaCierre, ')
+          ..write('fondoInicial: $fondoInicial, ')
+          ..write('totalVentas: $totalVentas, ')
+          ..write('totalEsperado: $totalEsperado, ')
+          ..write('efectivoContado: $efectivoContado, ')
+          ..write('diferencia: $diferencia, ')
+          ..write('montoRetirado: $montoRetirado, ')
+          ..write('fondoSiguienteTurno: $fondoSiguienteTurno, ')
+          ..write('totalMovimientos: $totalMovimientos, ')
+          ..write('totalSuscripciones: $totalSuscripciones, ')
+          ..write('totalRecargas: $totalRecargas, ')
+          ..write('desgloseJson: $desgloseJson, ')
+          ..write('observaciones: $observaciones, ')
+          ..write('estado: $estado, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -3282,6 +4473,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SuscripcionesTable suscripciones = $SuscripcionesTable(this);
   late final $SyncQueueTable syncQueue = $SyncQueueTable(this);
   late final $AppSettingsTable appSettings = $AppSettingsTable(this);
+  late final $CortesCajaTable cortesCaja = $CortesCajaTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -3293,6 +4485,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     suscripciones,
     syncQueue,
     appSettings,
+    cortesCaja,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([
@@ -5570,6 +6763,523 @@ typedef $$AppSettingsTableProcessedTableManager =
       AppSetting,
       PrefetchHooks Function()
     >;
+typedef $$CortesCajaTableCreateCompanionBuilder =
+    CortesCajaCompanion Function({
+      required String id,
+      required String sucursalId,
+      required String cajeroUsername,
+      required DateTime fechaApertura,
+      Value<DateTime?> fechaCierre,
+      Value<double> fondoInicial,
+      Value<double> totalVentas,
+      Value<double> totalEsperado,
+      Value<double?> efectivoContado,
+      Value<double> diferencia,
+      Value<double> montoRetirado,
+      Value<double> fondoSiguienteTurno,
+      Value<int> totalMovimientos,
+      Value<double> totalSuscripciones,
+      Value<double> totalRecargas,
+      Value<String?> desgloseJson,
+      Value<String?> observaciones,
+      Value<String> estado,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$CortesCajaTableUpdateCompanionBuilder =
+    CortesCajaCompanion Function({
+      Value<String> id,
+      Value<String> sucursalId,
+      Value<String> cajeroUsername,
+      Value<DateTime> fechaApertura,
+      Value<DateTime?> fechaCierre,
+      Value<double> fondoInicial,
+      Value<double> totalVentas,
+      Value<double> totalEsperado,
+      Value<double?> efectivoContado,
+      Value<double> diferencia,
+      Value<double> montoRetirado,
+      Value<double> fondoSiguienteTurno,
+      Value<int> totalMovimientos,
+      Value<double> totalSuscripciones,
+      Value<double> totalRecargas,
+      Value<String?> desgloseJson,
+      Value<String?> observaciones,
+      Value<String> estado,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$CortesCajaTableFilterComposer
+    extends Composer<_$AppDatabase, $CortesCajaTable> {
+  $$CortesCajaTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sucursalId => $composableBuilder(
+    column: $table.sucursalId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cajeroUsername => $composableBuilder(
+    column: $table.cajeroUsername,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaApertura => $composableBuilder(
+    column: $table.fechaApertura,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get fechaCierre => $composableBuilder(
+    column: $table.fechaCierre,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get fondoInicial => $composableBuilder(
+    column: $table.fondoInicial,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get totalVentas => $composableBuilder(
+    column: $table.totalVentas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get totalEsperado => $composableBuilder(
+    column: $table.totalEsperado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get efectivoContado => $composableBuilder(
+    column: $table.efectivoContado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get diferencia => $composableBuilder(
+    column: $table.diferencia,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get montoRetirado => $composableBuilder(
+    column: $table.montoRetirado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get fondoSiguienteTurno => $composableBuilder(
+    column: $table.fondoSiguienteTurno,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get totalMovimientos => $composableBuilder(
+    column: $table.totalMovimientos,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get totalSuscripciones => $composableBuilder(
+    column: $table.totalSuscripciones,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get totalRecargas => $composableBuilder(
+    column: $table.totalRecargas,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get desgloseJson => $composableBuilder(
+    column: $table.desgloseJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get estado => $composableBuilder(
+    column: $table.estado,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CortesCajaTableOrderingComposer
+    extends Composer<_$AppDatabase, $CortesCajaTable> {
+  $$CortesCajaTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sucursalId => $composableBuilder(
+    column: $table.sucursalId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cajeroUsername => $composableBuilder(
+    column: $table.cajeroUsername,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaApertura => $composableBuilder(
+    column: $table.fechaApertura,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get fechaCierre => $composableBuilder(
+    column: $table.fechaCierre,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get fondoInicial => $composableBuilder(
+    column: $table.fondoInicial,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get totalVentas => $composableBuilder(
+    column: $table.totalVentas,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get totalEsperado => $composableBuilder(
+    column: $table.totalEsperado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get efectivoContado => $composableBuilder(
+    column: $table.efectivoContado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get diferencia => $composableBuilder(
+    column: $table.diferencia,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get montoRetirado => $composableBuilder(
+    column: $table.montoRetirado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get fondoSiguienteTurno => $composableBuilder(
+    column: $table.fondoSiguienteTurno,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get totalMovimientos => $composableBuilder(
+    column: $table.totalMovimientos,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get totalSuscripciones => $composableBuilder(
+    column: $table.totalSuscripciones,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get totalRecargas => $composableBuilder(
+    column: $table.totalRecargas,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get desgloseJson => $composableBuilder(
+    column: $table.desgloseJson,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get estado => $composableBuilder(
+    column: $table.estado,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CortesCajaTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CortesCajaTable> {
+  $$CortesCajaTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get sucursalId => $composableBuilder(
+    column: $table.sucursalId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get cajeroUsername => $composableBuilder(
+    column: $table.cajeroUsername,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get fechaApertura => $composableBuilder(
+    column: $table.fechaApertura,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get fechaCierre => $composableBuilder(
+    column: $table.fechaCierre,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get fondoInicial => $composableBuilder(
+    column: $table.fondoInicial,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get totalVentas => $composableBuilder(
+    column: $table.totalVentas,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get totalEsperado => $composableBuilder(
+    column: $table.totalEsperado,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get efectivoContado => $composableBuilder(
+    column: $table.efectivoContado,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get diferencia => $composableBuilder(
+    column: $table.diferencia,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get montoRetirado => $composableBuilder(
+    column: $table.montoRetirado,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get fondoSiguienteTurno => $composableBuilder(
+    column: $table.fondoSiguienteTurno,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get totalMovimientos => $composableBuilder(
+    column: $table.totalMovimientos,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get totalSuscripciones => $composableBuilder(
+    column: $table.totalSuscripciones,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get totalRecargas => $composableBuilder(
+    column: $table.totalRecargas,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get desgloseJson => $composableBuilder(
+    column: $table.desgloseJson,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get observaciones => $composableBuilder(
+    column: $table.observaciones,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get estado =>
+      $composableBuilder(column: $table.estado, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$CortesCajaTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CortesCajaTable,
+          CortesCajaData,
+          $$CortesCajaTableFilterComposer,
+          $$CortesCajaTableOrderingComposer,
+          $$CortesCajaTableAnnotationComposer,
+          $$CortesCajaTableCreateCompanionBuilder,
+          $$CortesCajaTableUpdateCompanionBuilder,
+          (
+            CortesCajaData,
+            BaseReferences<_$AppDatabase, $CortesCajaTable, CortesCajaData>,
+          ),
+          CortesCajaData,
+          PrefetchHooks Function()
+        > {
+  $$CortesCajaTableTableManager(_$AppDatabase db, $CortesCajaTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CortesCajaTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CortesCajaTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CortesCajaTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> sucursalId = const Value.absent(),
+                Value<String> cajeroUsername = const Value.absent(),
+                Value<DateTime> fechaApertura = const Value.absent(),
+                Value<DateTime?> fechaCierre = const Value.absent(),
+                Value<double> fondoInicial = const Value.absent(),
+                Value<double> totalVentas = const Value.absent(),
+                Value<double> totalEsperado = const Value.absent(),
+                Value<double?> efectivoContado = const Value.absent(),
+                Value<double> diferencia = const Value.absent(),
+                Value<double> montoRetirado = const Value.absent(),
+                Value<double> fondoSiguienteTurno = const Value.absent(),
+                Value<int> totalMovimientos = const Value.absent(),
+                Value<double> totalSuscripciones = const Value.absent(),
+                Value<double> totalRecargas = const Value.absent(),
+                Value<String?> desgloseJson = const Value.absent(),
+                Value<String?> observaciones = const Value.absent(),
+                Value<String> estado = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CortesCajaCompanion(
+                id: id,
+                sucursalId: sucursalId,
+                cajeroUsername: cajeroUsername,
+                fechaApertura: fechaApertura,
+                fechaCierre: fechaCierre,
+                fondoInicial: fondoInicial,
+                totalVentas: totalVentas,
+                totalEsperado: totalEsperado,
+                efectivoContado: efectivoContado,
+                diferencia: diferencia,
+                montoRetirado: montoRetirado,
+                fondoSiguienteTurno: fondoSiguienteTurno,
+                totalMovimientos: totalMovimientos,
+                totalSuscripciones: totalSuscripciones,
+                totalRecargas: totalRecargas,
+                desgloseJson: desgloseJson,
+                observaciones: observaciones,
+                estado: estado,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String sucursalId,
+                required String cajeroUsername,
+                required DateTime fechaApertura,
+                Value<DateTime?> fechaCierre = const Value.absent(),
+                Value<double> fondoInicial = const Value.absent(),
+                Value<double> totalVentas = const Value.absent(),
+                Value<double> totalEsperado = const Value.absent(),
+                Value<double?> efectivoContado = const Value.absent(),
+                Value<double> diferencia = const Value.absent(),
+                Value<double> montoRetirado = const Value.absent(),
+                Value<double> fondoSiguienteTurno = const Value.absent(),
+                Value<int> totalMovimientos = const Value.absent(),
+                Value<double> totalSuscripciones = const Value.absent(),
+                Value<double> totalRecargas = const Value.absent(),
+                Value<String?> desgloseJson = const Value.absent(),
+                Value<String?> observaciones = const Value.absent(),
+                Value<String> estado = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => CortesCajaCompanion.insert(
+                id: id,
+                sucursalId: sucursalId,
+                cajeroUsername: cajeroUsername,
+                fechaApertura: fechaApertura,
+                fechaCierre: fechaCierre,
+                fondoInicial: fondoInicial,
+                totalVentas: totalVentas,
+                totalEsperado: totalEsperado,
+                efectivoContado: efectivoContado,
+                diferencia: diferencia,
+                montoRetirado: montoRetirado,
+                fondoSiguienteTurno: fondoSiguienteTurno,
+                totalMovimientos: totalMovimientos,
+                totalSuscripciones: totalSuscripciones,
+                totalRecargas: totalRecargas,
+                desgloseJson: desgloseJson,
+                observaciones: observaciones,
+                estado: estado,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CortesCajaTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CortesCajaTable,
+      CortesCajaData,
+      $$CortesCajaTableFilterComposer,
+      $$CortesCajaTableOrderingComposer,
+      $$CortesCajaTableAnnotationComposer,
+      $$CortesCajaTableCreateCompanionBuilder,
+      $$CortesCajaTableUpdateCompanionBuilder,
+      (
+        CortesCajaData,
+        BaseReferences<_$AppDatabase, $CortesCajaTable, CortesCajaData>,
+      ),
+      CortesCajaData,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -5586,4 +7296,6 @@ class $AppDatabaseManager {
       $$SyncQueueTableTableManager(_db, _db.syncQueue);
   $$AppSettingsTableTableManager get appSettings =>
       $$AppSettingsTableTableManager(_db, _db.appSettings);
+  $$CortesCajaTableTableManager get cortesCaja =>
+      $$CortesCajaTableTableManager(_db, _db.cortesCaja);
 }

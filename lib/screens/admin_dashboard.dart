@@ -6,6 +6,7 @@ import '../data/repositories/movimientos_repository.dart';
 import '../data/repositories/suscripciones_repository.dart';
 import '../models/models.dart';
 import '../widgets/theme_widgets.dart';
+import 'corte_caja_view.dart';
 import 'login_screen.dart';
 
 /// Dashboard del Administrador – Vista de Integración Global.
@@ -119,7 +120,7 @@ class _AdminDashboardState extends State<AdminDashboard>
     final isWide = screenWidth > 900;
 
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         body: Container(
           decoration: BoxDecoration(gradient: FitNetTheme.darkGradient),
@@ -139,6 +140,7 @@ class _AdminDashboardState extends State<AdminDashboard>
                     Tab(icon: Icon(Icons.dashboard_rounded), text: 'Dashboard'),
                     Tab(icon: Icon(Icons.account_tree_outlined), text: 'Desglose y Clientes'),
                     Tab(icon: Icon(Icons.history_rounded), text: 'Movimientos'),
+                    Tab(icon: Icon(Icons.point_of_sale_rounded), text: 'Cortes de Caja'),
                   ],
                 ),
               ),
@@ -346,6 +348,63 @@ class _AdminDashboardState extends State<AdminDashboard>
                                   child: _MovimientosSucursalSection(
                                     sucursal: s,
                                     providers: providers,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                            ],
+                          ),
+                        ),
+
+                        // TAB 4: Auditoría de Cortes de Caja
+                        SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isWide ? 48 : 12,
+                            vertical: isWide ? 24 : 16,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.point_of_sale_rounded,
+                                    color: FitNetTheme.gold,
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Auditoría Global de Cortes de Caja',
+                                    style: TextStyle(
+                                      color: FitNetTheme.textPrimary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -0.3,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              const Text(
+                                'Supervisión de turnos cerrados, retiros de ventas acumuladas y comprobantes PDF',
+                                style: TextStyle(
+                                  color: FitNetTheme.textSecondary,
+                                  fontSize: 13,
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+
+                              ..._sucursales.map(
+                                (s) => Padding(
+                                  padding: const EdgeInsets.only(bottom: 24),
+                                  child: PremiumCard(
+                                    title: 'Cortes de Caja · $s',
+                                    icon: Icons.storefront_rounded,
+                                    child: CorteCajaView(
+                                      usuario: widget.usuario,
+                                      sucursal: s,
+                                      esModoAdmin: true,
+                                    ),
                                   ),
                                 ),
                               ),

@@ -124,7 +124,42 @@ class ClientesRepository {
             ),
           );
 
-      // 3. Registrar cliente en sync_queue.
+      // 3. Registrar movimiento financiero si hay saldo inicial (ingreso en efectivo por recarga).
+      if (saldoInicial > 0) {
+        final movId = _uuid.v4();
+        await _db.into(_db.movimientos).insert(
+              MovimientosCompanion.insert(
+                id: movId,
+                idTarjeta: tarjetaId,
+                sucursalId: sucursalId,
+                tipo: 'recarga',
+                monto: saldoInicial,
+                fecha: now,
+                createdAt: now,
+                updatedAt: now,
+              ),
+            );
+
+        await _db.into(_db.syncQueue).insert(
+              SyncQueueCompanion.insert(
+                id: _uuid.v4(),
+                entityType: 'movimiento',
+                entityId: movId,
+                operation: 'insert',
+                payload: jsonEncode({
+                  'id': movId,
+                  'id_tarjeta': tarjetaId,
+                  'sucursal_id': sucursalId,
+                  'tipo': 'recarga',
+                  'monto': saldoInicial,
+                  'fecha': now.toIso8601String(),
+                }),
+                createdAt: now,
+              ),
+            );
+      }
+
+      // 4. Registrar cliente en sync_queue.
       await _db
           .into(_db.syncQueue)
           .insert(
@@ -143,7 +178,7 @@ class ClientesRepository {
             ),
           );
 
-      // 4. Registrar tarjeta en sync_queue.
+      // 5. Registrar tarjeta en sync_queue.
       await _db
           .into(_db.syncQueue)
           .insert(
